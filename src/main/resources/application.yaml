@@ -9,7 +9,7 @@ spring:
       location: /tmp
       # DB 접속 정보
   datasource: # 내용은 셀프로 채우기?
-    url:jdbc: postgresql://localhost:5432/hrbank
+    url: jdbc:postgresql://localhost:5432/hrbank
     username: hrbank_user
     password: hrbank1234
     driver-class-name: org.postgresql.Driver
