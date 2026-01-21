@@ -1,3 +1,11 @@
 /gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
+
+# 모든 텍스트 파일은 체크아웃할 때 OS에 맞춰 변환하고, 커밋할 때는 LF로 통일한다.
+text=auto eol=lf
+*.java text eol=lf
+*.yml text eol=lf
+*.xml text eol=lf
+*.gradle text eol=lf
+*.md text eol=lf
