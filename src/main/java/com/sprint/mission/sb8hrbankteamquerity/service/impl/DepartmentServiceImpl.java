@@ -11,9 +11,11 @@ import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
@@ -60,11 +62,13 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DepartmentDto find(Long departmentId) {
         return null;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DepartmentDto> findAll() {
         return List.of();
     }
