@@ -35,4 +35,15 @@ public class EmployeeHistoryController {
 
         return ResponseEntity.ok(employeeHistoryDTOList);
     }
+
+
+    @GetMapping(name = "")
+    public ResponseEntity<EmployeeHistoryGetResponse> getByIdEmployeeHistory(
+        @PathVariable Long employeeHistoryId
+    ){
+        EmployeeHistoryGetResponse employeeHistoryList =
+            employeeHistoryService.getByIdEmployeeHistory(employeeHistoryId);
+
+        return ResponseEntity.ok(employeeHistoryList);
+    }
 }

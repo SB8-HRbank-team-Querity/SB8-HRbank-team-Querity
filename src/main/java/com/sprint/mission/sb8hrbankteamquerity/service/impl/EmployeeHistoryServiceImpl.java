@@ -9,6 +9,7 @@ import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -36,5 +37,15 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
                 map(employeeHistoryMapper::toGetResponse).toList();
 
         return employeeHistoryGetResponseList;
+    }
+
+
+    @Override
+    public EmployeeHistoryGetResponse getByIdEmployeeHistory(Long employeeHistoryId) {
+        EmployeeHistory employeeHistory =
+            employeeHistoryRepository.findById(employeeHistoryId).
+            orElseThrow(()-> new NullPointerException("찾을 수 없는 이력입니다."));
+
+        return employeeHistoryMapper.toGetResponse(employeeHistory);
     }
 }
