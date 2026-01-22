@@ -1,8 +1,9 @@
 package com.sprint.mission.sb8hrbankteamquerity.mapper;
 
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
+import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -11,5 +12,6 @@ import org.mapstruct.ReportingPolicy;
     unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface EmployeeMapper {
+
     EmployeeDto toDto(Employee employee);
 }

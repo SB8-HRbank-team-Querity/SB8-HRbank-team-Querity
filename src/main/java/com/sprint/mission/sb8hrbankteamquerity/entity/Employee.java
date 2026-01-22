@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
+import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.Random;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Employee extends BaseEntity {
+public class Employee extends BaseUpdatableEntity {
 
     @Column(name = "name", length = 50, nullable = false)
     private String name;
@@ -37,30 +38,30 @@ public class Employee extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
-    private Department departmentId;
+    private Department department;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
     private FileMeta profileImageId;
 
-    public Employee(String name, String email, String employeeNumber, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
+    public Employee(String name, String email, String employeeNumber, Department department, String position, Instant hireDate, FileMeta profileImageId) {
         this.name = name;
         this.email = email;
         this.employeeNumber = employeeNumber;
-        this.departmentId = departmentId;
+        this.department = department;
         this.position = position;
         this.hireDate = hireDate;
         this.profileImageId = profileImageId;
     }
 
-    public static Employee create(String name, String email, Department departmentId, String position, Instant hireDate) {
+    public static Employee create(String name, String email, Department department, String position, Instant hireDate) {
         String employeeNumber = createEmployeeNumber(hireDate);
-        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, null);
+        return new Employee(name, email, employeeNumber, department, position, hireDate, null);
     }
 
-    public static Employee createProfile(String name, String email, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
+    public static Employee createProfile(String name, String email, Department department, String position, Instant hireDate, FileMeta profileImageId) {
         String employeeNumber = createEmployeeNumber(hireDate);
-        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, profileImageId);
+        return new Employee(name, email, employeeNumber, department, position, hireDate, profileImageId);
     }
 
     private static String createEmployeeNumber(Instant hireDate) {
