@@ -11,7 +11,6 @@ CREATE TABLE department
     name             varchar(100) NOT NULL UNIQUE,
     description      text,
     established_date timestamptz  NOT NULL,
-    employee_count   int          NOT NULL DEFAULT 0,
     created_at       timestamptz  NOT NULL,
     updated_at       timestamptz  NOT NULL
 );
@@ -84,17 +83,18 @@ CREATE TABLE backup_history
 CREATE INDEX idx_file_meta_created_at ON file_meta (created_at);
 
 -- 더미데이터
-INSERT INTO department (name, description, established_date, employee_count, created_at, updated_at)
-VALUES ('인사팀', '인력 관리 및 채용', '2020-01-01', 2, NOW(), NOW()),
-       ('개발1팀', '백엔드 시스템 개발', '2020-01-01', 3, NOW(), NOW()),
-       ('개발2팀', '프론트엔드 서비스 개발', '2020-05-10', 1, NOW(), NOW()),
-       ('디자인팀', 'UI/UX 디자인 및 브랜드', '2020-05-10', 1, NOW(), NOW()),
-       ('마케팅팀', '퍼포먼스 마케팅', '2021-02-15', 1, NOW(), NOW()),
-       ('영업팀', '국내 및 해외 영업', '2021-02-15', 2, NOW(), NOW()),
-       ('기획팀', '서비스 및 사업 기획', '2022-03-01', 0, NOW(), NOW()),
-       ('QA팀', '품질 보증 및 테스트', '2022-03-01', 0, NOW(), NOW()),
-       ('보안팀', '사내 정보 보안 관리', '2023-08-20', 0, NOW(), NOW()),
-       ('법무팀', '계약 검토 및 법률 자문', '2023-08-20', 0, NOW(), NOW());
+INSERT INTO department (name, description, established_date, created_at, updated_at)
+VALUES ('인사부', '직원 채용 및 관리', '2000-01-01 09:00:00+09', NOW(), NOW()),
+       ('재무부', '회계 및 재무 관리', '2001-02-15 09:00:00+09', NOW(), NOW()),
+       ('영업부', '판매 및 고객 관리', '2002-03-10 09:00:00+09', NOW(), NOW()),
+       ('마케팅부', '광고 및 홍보', '2003-04-05 09:00:00+09', NOW(), NOW()),
+       ('기술부', '시스템 개발 및 유지보수', '2004-05-20 09:00:00+09', NOW(), NOW()),
+       ('연구개발부', '신제품 개발', '2005-06-15 09:00:00+09', NOW(), NOW()),
+       ('고객지원부', '고객 상담 및 지원', '2006-07-10 09:00:00+09', NOW(), NOW()),
+       ('품질관리부', '제품 품질 관리', '2007-08-01 09:00:00+09', NOW(), NOW()),
+       ('물류부', '재고 및 배송 관리', '2008-09-12 09:00:00+09', NOW(), NOW()),
+       ('전략기획부', '회사 전략 및 계획 수립', '2009-10-25 09:00:00+09', NOW(), NOW());
+
 
 INSERT INTO file_meta (origin_name, size, type, path, created_at, updated_at)
 VALUES ('profile_01.png', 150200, 'image/png', '/uploads/1.png', NOW(), NOW()),
