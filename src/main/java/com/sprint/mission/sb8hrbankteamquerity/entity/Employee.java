@@ -3,28 +3,24 @@ package com.sprint.mission.sb8hrbankteamquerity.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Random;
 
 @Entity
 @Table(name = "employee")
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Employee {
+public class Employee extends BaseEntity {
 
     public enum Status {
         ACTIVE,
         ONLEAVE,
         RESIGNED
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(name = "name", length = 50, nullable = false)
     private String name;
@@ -45,14 +41,6 @@ public class Employee {
     @Column(name = "status", length = 50, nullable = false)
     private Status status = Status.ACTIVE;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private Instant createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department departmentId;
@@ -61,13 +49,30 @@ public class Employee {
     @JoinColumn(name = "profile_image_id")
     private FileMeta profileImageId;
 
-    public Employee(String name, String email, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
+    public Employee(String name, String email, String employeeNumber, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
         this.name = name;
         this.email = email;
+        this.employeeNumber = employeeNumber;
         this.departmentId = departmentId;
         this.position = position;
         this.hireDate = hireDate;
         this.profileImageId = profileImageId;
+    }
+
+    public static Employee create(String name, String email, Department departmentId, String position, Instant hireDate) {
+        String employeeNumber = createEmployeeNumber(hireDate);
+        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, null);
+    }
+
+    public static Employee createProfile(String name, String email, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
+        String employeeNumber = createEmployeeNumber(hireDate);
+        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, profileImageId);
+    }
+
+    private static String createEmployeeNumber(Instant hireDate) {
+        int year = hireDate.atZone(ZoneId.systemDefault()).getYear();
+        int random = new Random().nextInt(9000) + 1000;
+        return String.format("EMP-%d-%d", year, random);
     }
 
 }
