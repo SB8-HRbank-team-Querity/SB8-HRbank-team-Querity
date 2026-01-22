@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
+import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.Random;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Employee extends BaseEntity {
+public class Employee extends BaseUpdatableEntity {
 
     @Column(name = "name", length = 50, nullable = false)
     private String name;
@@ -43,7 +44,7 @@ public class Employee extends BaseEntity {
     @JoinColumn(name = "profile_image_id")
     private FileMeta profileImageId;
 
-    public Employee(String name, String email, String employeeNumber, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
+    public Employee(String name, String email, String employeeNumber, Department department, String position, Instant hireDate, FileMeta profileImageId) {
         this.name = name;
         this.email = email;
         this.employeeNumber = employeeNumber;

@@ -37,15 +37,15 @@ public class Department extends BaseUpdatableEntity {
     }
 
     public void update(String newName, String newDescription, Date newEstablishedDate) {
-        if(newName != null && !newName.equals(this.name)) {
+        if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
         }
 
-        if(newDescription != null && !newDescription.equals(this.description)) {
+        if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
         }
 
-        if(newEstablishedDate != null && !newEstablishedDate.equals(this.establishedDate)) {
+        if (newEstablishedDate != null && !newEstablishedDate.equals(this.establishedDate)) {
             this.establishedDate = newEstablishedDate;
         }
     }
