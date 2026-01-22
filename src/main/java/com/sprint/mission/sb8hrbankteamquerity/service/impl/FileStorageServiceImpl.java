@@ -5,14 +5,17 @@ import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -47,7 +50,8 @@ public class FileStorageServiceImpl implements FileStorageService {
     public FileMeta save(MultipartFile file) throws IOException {
 
         // 파일명 정리 (../ 같은 경로 조작 문자 제거)
-        String originName = StringUtils.cleanPath(file.getOriginalFilename());
+        String originName = StringUtils.cleanPath(
+            Objects.requireNonNull(file.getOriginalFilename()));
 
         // 파일명 유효성 검사 (제거 잘 됐는지)
         if (originName.contains("..")) {
@@ -75,12 +79,29 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Resource downloadFile(Long fileId) {
-        return null;
+        FileMeta fileMeta = getFileMeta(fileId);
+        Path filePath = Paths.get(fileMeta.getPath());
+
+        try {
+            // 파일의 uri를 통해 Resource 객체 생성
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("파일을 읽을 수 없습니다." + fileMeta.getOriginName());
+            }
+        } catch (MalformedURLException e) { // 잘못된 형식의 URL일 경우
+            throw new RuntimeException("파일 경로가 잘못되었습니다." + fileMeta.getPath(), e);
+        }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FileMeta getFileMeta(Long fileId) {
-        return null;
+        return fileRepository.findById(fileId)
+            .orElseThrow(() -> new RuntimeException("파일을 찾을 수 없습니다. ID: " + fileId));
     }
 }
