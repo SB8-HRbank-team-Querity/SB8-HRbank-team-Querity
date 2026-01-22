@@ -1,26 +1,19 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
-import jakarta.persistence.*;
+import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "file_meta")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class FileMeta {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class FileMeta extends BaseUpdatableEntity {
 
     @Column(name = "origin_name", nullable = false, length = 50)
     private String originName;
@@ -33,14 +26,6 @@ public class FileMeta {
 
     @Column(nullable = false, length = 500)
     private String path;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     @Builder
     public FileMeta(String originName, Long size, String type, String path) {
