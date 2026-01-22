@@ -5,16 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
-import java.io.Serializable;
 import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "backup_history")
-public class BackupHistory implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class BackupHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
