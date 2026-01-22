@@ -4,9 +4,12 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentCreateRe
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentUpdateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,10 +40,46 @@ public class DepartmentController {
     public ResponseEntity<DepartmentDto> update(
         @PathVariable Long departmentId,
         @RequestBody DepartmentUpdateRequest departmentUpdateRequest) {
-        DepartmentDto departmentDto = departmentService.update(departmentId, departmentUpdateRequest);
+        DepartmentDto departmentDto = departmentService.update(departmentId,
+            departmentUpdateRequest);
 
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(departmentDto);
+    }
+
+    // 부서 단건 조회
+    @GetMapping(value = "/{departmentId}")
+    public ResponseEntity<DepartmentDto> find(
+        @PathVariable Long departmentId
+    ) {
+        DepartmentDto departmentDto = departmentService.find(departmentId);
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(departmentDto);
+    }
+
+    // 부서 다건 조회
+    @GetMapping
+    public ResponseEntity<List<DepartmentDto>> findAll() {
+        List<DepartmentDto> departmentDtoList = departmentService.findAll();
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(departmentDtoList);
+    }
+
+    // 부서 삭제
+    @DeleteMapping(value = "/{departmentId}")
+    public ResponseEntity<Void> delete(
+        @PathVariable Long departmentId
+    ){
+        departmentService.delete(departmentId);
+
+        // body 본문에 넣을 내용이 없는 경우(즉, 반환값이 void인 경우) build 사용
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build();
     }
 }
