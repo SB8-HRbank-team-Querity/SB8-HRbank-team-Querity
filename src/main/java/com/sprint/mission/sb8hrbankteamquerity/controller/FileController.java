@@ -1,7 +1,9 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.controller.docs.FileMetaApi;
+import com.sprint.mission.sb8hrbankteamquerity.dto.fileMeta.FileMetaResponse;
 import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
+import com.sprint.mission.sb8hrbankteamquerity.mapper.FileMetaMapper;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,12 +29,14 @@ public class FileController implements FileMetaApi {
     private static final String ATTACHMENT_FILENAME_FORMAT = "attachment; filename=\"%s\"";
 
     private final FileStorageService fileStorageService;
+    private final FileMetaMapper fileMetaMapper;
 
     @Override
     @PostMapping
-    public ResponseEntity<FileMeta> uploadFile(@RequestParam("file")MultipartFile file) throws IOException {
+    public ResponseEntity<FileMetaResponse> uploadFile(@RequestParam("file")MultipartFile file) throws IOException {
         FileMeta savedFile = fileStorageService.save(file);
-        return ResponseEntity.ok(savedFile);
+        FileMetaResponse fileMetaResponse = fileMetaMapper.toFileMetaResponse(savedFile);
+        return ResponseEntity.ok(fileMetaResponse);
     }
 
     @Override

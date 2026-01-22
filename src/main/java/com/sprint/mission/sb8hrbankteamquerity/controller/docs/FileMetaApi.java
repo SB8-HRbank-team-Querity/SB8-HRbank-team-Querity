@@ -1,6 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller.docs;
 
-import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
+import com.sprint.mission.sb8hrbankteamquerity.dto.fileMeta.FileMetaResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,11 +20,11 @@ public interface FileMetaApi {
 
     @Operation(summary = "파일 업로드", description = "MultipartFile을 받아 서버 스토리지에 저장하고 메타 정보를 반환합니다.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "업로드 성공", content = @Content(schema = @Schema(implementation = FileMeta.class))),
+        @ApiResponse(responseCode = "200", description = "업로드 성공", content = @Content(schema = @Schema(implementation = FileMetaResponse.class))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 (파일 없음 등)"),
         @ApiResponse(responseCode = "500", description = "서버 저장 실패")
     })
-    ResponseEntity<FileMeta> uploadFile(
+    ResponseEntity<FileMetaResponse> uploadFile(
         @Parameter(description = "업로드할 파일", required = true)
         @RequestParam("file") MultipartFile file
     ) throws IOException;
