@@ -18,7 +18,7 @@ public class Employee extends BaseEntity {
 
     public enum Status {
         ACTIVE,
-        ONLEAVE,
+        ON_LEAVE,
         RESIGNED
     }
 
