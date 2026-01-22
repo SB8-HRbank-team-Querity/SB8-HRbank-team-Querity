@@ -40,7 +40,23 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentDto update(Long departmentId,
         DepartmentUpdateRequest departmentUpdateRequest) {
 
-        return null;
+        // 부서가 존재하지 않을 경우 오류 처리
+        Department department = departmentRepository.findById(departmentId)
+            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+
+        String newName = departmentUpdateRequest.newName();
+        String newDescription = departmentUpdateRequest.newDescription();
+        Date newEstablishedDate = departmentUpdateRequest.newEstablishedDate();
+
+        // 바꾸려는 부서의 이름이 이미 존재하는 경우 오류 처리
+        if (departmentRepository.existsByName(newName)){
+            throw new IllegalArgumentException("Department already exists");
+        }
+
+        department.update(newName, newDescription, newEstablishedDate);
+        departmentRepository.save(department);
+
+        return departmentMapper.toDto(department);
     }
 
     @Override
