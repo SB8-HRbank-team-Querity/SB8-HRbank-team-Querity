@@ -11,7 +11,6 @@ CREATE TABLE department
     name             varchar(100) NOT NULL UNIQUE,
     description      text,
     established_date timestamptz  NOT NULL,
-    employee_count   int          NOT NULL DEFAULT 0,
     created_at       timestamptz  NOT NULL,
     updated_at       timestamptz  NOT NULL
 );
