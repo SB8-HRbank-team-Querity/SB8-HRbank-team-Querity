@@ -1,8 +1,8 @@
-DROP TABLE IF EXISTS backup_history CASCADE;
-DROP TABLE IF EXISTS employee CASCADE;
-DROP TABLE IF EXISTS file_meta CASCADE;
-DROP TABLE IF EXISTS employee_history CASCADE;
-DROP TABLE IF EXISTS department CASCADE;
+-- DROP TABLE IF EXISTS backup_history CASCADE;
+-- DROP TABLE IF EXISTS employee CASCADE;
+-- DROP TABLE IF EXISTS file_meta CASCADE;
+-- DROP TABLE IF EXISTS employee_history CASCADE;
+-- DROP TABLE IF EXISTS department CASCADE;
 
 -- 1. 부서 테이블
 CREATE TABLE department
@@ -170,3 +170,4 @@ SELECT *
 FROM file_meta;
 SELECT *
 FROM backup_history;
+
