@@ -37,14 +37,14 @@ CREATE TABLE IF NOT EXISTS employee
     employee_number  varchar(50)                                        NOT NULL,
     position         varchar(50)                                        NOT NULL,
     hire_date        timestamptz                                        NOT NULL,
-    status           varchar(50)                                        NOT NULL DEFAULT '재직중',
+    status           varchar(50)                                        NOT NULL DEFAULT 'ACTIVE',
     created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
     department_id    int                                                NOT NULL,
     profile_image_id int,
 
-    CONSTRAINT check_status CHECK (status IN ('재직중', '휴직중', '퇴사')),
+    CONSTRAINT check_status CHECK (status IN ('ACTIVE', 'ON_LEAVE', 'RESIGNED')),
     CONSTRAINT fk_department_id FOREIGN KEY (department_id) REFERENCES department (id),
     CONSTRAINT fk_profile_image_id FOREIGN KEY (profile_image_id) REFERENCES file_meta (id),
     CONSTRAINT uk_email UNIQUE (email),
@@ -63,21 +63,21 @@ CREATE TABLE employee_history
     employee_name   varchar(50)  NOT NULL,
     employee_number varchar(50)  NOT NULL,
 
-    CHECK (type IN ('직원 추가', '정보 수정', '직원 삭제'))
+    CHECK (type IN ('CREATED', 'UPDATED', 'DELETED'))
 );
 
 -- 5. 백업 데이터 테이블
 CREATE TABLE backup_history
 (
     id         serial PRIMARY KEY,
-    worker     varchar(50)               NOT NULL,
-    started_at timestamptz               NOT NULL,
+    worker     varchar(50)                   NOT NULL,
+    started_at timestamptz                   NOT NULL,
     ended_at   timestamptz,
-    status     varchar(50) DEFAULT '진행중' NOT NULL,
-    created_at timestamptz               NOT NULL,
+    status     varchar(50) DEFAULT 'SKIPPED' NOT NULL,
+    created_at timestamptz                   NOT NULL,
     file_id    int REFERENCES file_meta (id),
 
-    CHECK (status IN ('진행중', '완료', '실패', '건너뜀'))
+    CHECK (status IN ('SKIPPED', 'COMPLETED', 'FAILED', 'IN_PROGRESS'))
 );
 
 -- 인덱스
@@ -85,81 +85,87 @@ CREATE INDEX idx_file_meta_created_at ON file_meta (created_at);
 
 -- 더미데이터
 INSERT INTO department (name, description, established_date, employee_count, created_at, updated_at)
-VALUES ('개발팀', '백엔드/프론트엔드 개발', '2019-01-01', 3, NOW(), NOW()),
-       ('인사팀', '채용 및 인사관리', '2019-03-01', 2, NOW(), NOW()),
-       ('기획팀', '서비스 기획', '2020-01-01', 1, NOW(), NOW()),
-       ('디자인팀', 'UI/UX 디자인', '2020-05-01', 1, NOW(), NOW()),
-       ('마케팅팀', '마케팅 전략', '2021-01-01', 1, NOW(), NOW()),
-       ('영업팀', '영업 관리', '2021-06-01', 1, NOW(), NOW()),
-       ('운영팀', '시스템 운영', '2022-01-01', 0, NOW(), NOW()),
-       ('재무팀', '회계 및 재무', '2018-01-01', 0, NOW(), NOW()),
-       ('CS팀', '고객 지원', '2022-05-01', 0, NOW(), NOW()),
-       ('QA팀', '품질 관리', '2023-01-01', 0, NOW(), NOW());
-INSERT INTO file_meta (origin_name, size, type, path)
-VALUES ('profile1.png', 100000, 'image/png', '/uploads/profile1.png'),
-       ('profile2.png', 110000, 'image/png', '/uploads/profile2.png'),
-       ('profile3.png', 120000, 'image/png', '/uploads/profile3.png'),
-       ('profile4.png', 130000, 'image/png', '/uploads/profile4.png'),
-       ('profile5.png', 140000, 'image/png', '/uploads/profile5.png'),
-       ('profile6.png', 150000, 'image/png', '/uploads/profile6.png'),
-       ('profile7.png', 160000, 'image/png', '/uploads/profile7.png'),
-       ('profile8.png', 170000, 'image/png', '/uploads/profile8.png'),
-       ('profile9.png', 180000, 'image/png', '/uploads/profile9.png'),
-       ('profile10.png', 190000, 'image/png', '/uploads/profile10.png');
-INSERT INTO employee (name, email, employee_number, position, hire_date, status, department_id, profile_image_id)
-VALUES ('김예은', 'user1@test.com', 'EMP001', '백엔드 개발자', '2022-01-10', '재직중', 1, 1),
-       ('이민수', 'user2@test.com', 'EMP002', '프론트엔드 개발자', '2022-03-15', '재직중', 1, 2),
-       ('박지현', 'user3@test.com', 'EMP003', '인사 담당자', '2021-07-01', '재직중', 2, 3),
-       ('최영호', 'user4@test.com', 'EMP004', '기획자', '2023-01-01', '재직중', 3, 4),
-       ('정수빈', 'user5@test.com', 'EMP005', '디자이너', '2020-11-01', '휴직중', 4, 5),
-       ('한지민', 'user6@test.com', 'EMP006', '마케터', '2021-09-01', '재직중', 5, 6),
-       ('오세훈', 'user7@test.com', 'EMP007', '영업 사원', '2022-04-01', '재직중', 6, 7),
-       ('윤아름', 'user8@test.com', 'EMP008', '운영 담당', '2023-02-01', '재직중', 7, 8),
-       ('강동원', 'user9@test.com', 'EMP009', '재무 담당', '2020-06-01', '퇴사', 8, 9),
-       ('서지수', 'user10@test.com', 'EMP010', 'QA 엔지니어', '2024-01-01', DEFAULT, 10, 10);
-INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
-VALUES ('직원 추가', '신규 입사', '10.0.0.1', NOW(), '{
-    "action": "create"
-}', '김예은', 'EMP001'),
-       ('정보 수정', '직급 변경', '10.0.0.2', NOW(), '{
-           "position": "선임 개발자"
-       }', '이민수', 'EMP002'),
-       ('직원 추가', '신규 입사', '10.0.0.3', NOW(), '{
-           "action": "create"
-       }', '박지현', 'EMP003'),
-       ('정보 수정', '부서 이동', '10.0.0.4', NOW(), '{
-           "department": "기획팀"
-       }', '최영호', 'EMP004'),
-       ('정보 수정', '휴직 처리', '10.0.0.5', NOW(), '{
-           "status": "휴직중"
-       }', '정수빈', 'EMP005'),
-       ('직원 추가', '신규 입사', '10.0.0.6', NOW(), '{
-           "action": "create"
-       }', '한지민', 'EMP006'),
-       ('정보 수정', '이메일 변경', '10.0.0.7', NOW(), '{
-           "email": "new7@test.com"
-       }', '오세훈', 'EMP007'),
-       ('직원 추가', '신규 입사', '10.0.0.8', NOW(), '{
-           "action": "create"
-       }', '윤아름', 'EMP008'),
-       ('직원 삭제', '퇴사 처리', '10.0.0.9', NOW(), '{
-           "status": "퇴사"
-       }', '강동원', 'EMP009'),
-       ('정보 수정', '프로필 변경', '10.0.0.10', NOW(), '{
-           "profile_image": "updated"
-       }', '서지수', 'EMP010');
-INSERT INTO backup_history (worker, started_at, ended_at, status, created_at, file_id)
-VALUES ('admin', NOW() - INTERVAL '30 min', NOW(), '완료', NOW(), 1),
-       ('admin', NOW() - INTERVAL '40 min', NOW(), '완료', NOW(), 2),
-       ('system', NOW() - INTERVAL '20 min', NOW(), '완료', NOW(), 3),
-       ('system', NOW() - INTERVAL '15 min', NOW(), '완료', NOW(), 4),
-       ('admin', NOW() - INTERVAL '10 min', NOW(), '완료', NOW(), 5),
-       ('admin', NOW() - INTERVAL '5 min', NOW(), '완료', NOW(), 6),
-       ('system', NOW() - INTERVAL '1 hour', NOW(), '실패', NOW(), 7),
-       ('system', NOW() - INTERVAL '2 hour', NOW(), '완료', NOW(), 8),
-       ('admin', NOW() - INTERVAL '3 hour', NOW(), '완료', NOW(), 9),
-       ('admin', NOW() - INTERVAL '4 hour', NOW(), '완료', NOW(), 10);
+VALUES ('인사팀', '인력 관리 및 채용', '2020-01-01', 2, NOW(), NOW()),
+       ('개발1팀', '백엔드 시스템 개발', '2020-01-01', 3, NOW(), NOW()),
+       ('개발2팀', '프론트엔드 서비스 개발', '2020-05-10', 1, NOW(), NOW()),
+       ('디자인팀', 'UI/UX 디자인 및 브랜드', '2020-05-10', 1, NOW(), NOW()),
+       ('마케팅팀', '퍼포먼스 마케팅', '2021-02-15', 1, NOW(), NOW()),
+       ('영업팀', '국내 및 해외 영업', '2021-02-15', 2, NOW(), NOW()),
+       ('기획팀', '서비스 및 사업 기획', '2022-03-01', 0, NOW(), NOW()),
+       ('QA팀', '품질 보증 및 테스트', '2022-03-01', 0, NOW(), NOW()),
+       ('보안팀', '사내 정보 보안 관리', '2023-08-20', 0, NOW(), NOW()),
+       ('법무팀', '계약 검토 및 법률 자문', '2023-08-20', 0, NOW(), NOW());
 
+INSERT INTO file_meta (origin_name, size, type, path, created_at, updated_at)
+VALUES ('profile_01.png', 150200, 'image/png', '/uploads/1.png', NOW(), NOW()),
+       ('profile_02.jpg', 88400, 'image/jpeg', '/uploads/2.jpg', NOW(), NOW()),
+       ('profile_03.png', 210500, 'image/png', '/uploads/3.png', NOW(), NOW()),
+       ('resume_01.pdf', 1048576, 'application/pdf', '/docs/1.pdf', NOW(), NOW()),
+       ('logo.svg', 15200, 'image/svg+xml', '/assets/logo.svg', NOW(), NOW()),
+       ('backup_v1.zip', 52428800, 'application/zip', '/backups/v1.zip', NOW(), NOW()),
+       ('backup_v2.zip', 53428800, 'application/zip', '/backups/v2.zip', NOW(), NOW()),
+       ('manual.docx', 45000, 'application/msword', '/docs/manual.docx', NOW(), NOW()),
+       ('contract.pdf', 320500, 'application/pdf', '/docs/contract.pdf', NOW(), NOW()),
+       ('avatar_tmp.png', 12000, 'image/png', '/tmp/avatar.png', NOW(), NOW());
+
+INSERT INTO employee (name, email, employee_number, position, hire_date, status, department_id, profile_image_id,
+                      created_at, updated_at)
+VALUES ('홍길동', 'gildong@company.com', 'EMP202001', '팀장', '2020-01-01', 'ACTIVE', 1, 1, NOW(), NOW()),
+       ('김철수', 'chulsu@company.com', 'EMP202002', '대리', '2020-02-15', 'ACTIVE', 1, 2, NOW(), NOW()),
+       ('이영희', 'young@company.com', 'EMP202003', '과장', '2020-03-10', 'ACTIVE', 2, 3, NOW(), NOW()),
+       ('박지민', 'jimin@company.com', 'EMP202101', '사원', '2021-01-20', 'ACTIVE', 2, NULL, NOW(), NOW()),
+       ('최준호', 'junho@company.com', 'EMP202102', '차장', '2021-04-05', 'ACTIVE', 2, NULL, NOW(), NOW()),
+       ('강미나', 'mina@company.com', 'EMP202201', '대리', '2022-05-12', 'ACTIVE', 3, NULL, NOW(), NOW()),
+       ('윤도현', 'dh.yoon@company.com', 'EMP202202', '사원', '2022-06-01', 'ON_LEAVE', 4, 4, NOW(), NOW()),
+       ('정수지', 'suzi@company.com', 'EMP202301', '주임', '2023-02-11', 'ACTIVE', 5, NULL, NOW(), NOW()),
+       ('한가인', 'gain@company.com', 'EMP202302', '팀장', '2023-03-01', 'ACTIVE', 6, NULL, NOW(), NOW()),
+       ('송강호', 'gh.song@company.com', 'EMP202303', '과장', '2023-09-15', 'ACTIVE', 6, NULL, NOW(), NOW());
+
+INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
+VALUES ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+    "dept": "인사팀"
+}', '홍길동', 'EMP202001'),
+       ('UPDATED', '직급 변경 (사원->대리)', '192.168.0.15', NOW(), '{
+           "pos_old": "사원",
+           "pos_new": "대리"
+       }', '김철수', 'EMP202002'),
+       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+           "dept": "개발1팀"
+       }', '이영희', 'EMP202003'),
+       ('UPDATED', '개인 이메일 수정', '211.234.12.5', NOW(), '{
+           "email": "changed@co.com"
+       }', '박지민', 'EMP202101'),
+       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+           "dept": "개발1팀"
+       }', '최준호', 'EMP202102'),
+       ('UPDATED', '휴직 처리 (육아휴직)', '10.0.5.21', NOW(), '{
+           "status": "ON_LEAVE"
+       }', '윤도현', 'EMP202202'),
+       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+           "dept": "디자인팀"
+       }', '강미나', 'EMP202201'),
+       ('DELETED', '퇴사 처리', '192.168.0.10', NOW(), '{
+           "reason": "개인사유"
+       }', '퇴사자A', 'EMP999999'),
+       ('UPDATED', '부서 이동', '10.0.5.21', NOW(), '{
+           "dept_old": 1,
+           "dept_new": 6
+       }', '한가인', 'EMP202302'),
+       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+           "dept": "영업팀"
+       }', '송강호', 'EMP202303');
+
+INSERT INTO backup_history (worker, started_at, ended_at, status, created_at, file_id)
+VALUES ('Admin_Sys', NOW() - INTERVAL '2 days', NOW() - INTERVAL '115 minutes', 'COMPLETED', NOW(), 6),
+       ('Admin_Sys', NOW() - INTERVAL '1 day', NOW() - INTERVAL '55 minutes', 'COMPLETED', NOW(), 7),
+       ('Scheduler', NOW() - INTERVAL '12 hours', NULL, 'FAILED', NOW(), NULL),
+       ('Admin_Dev', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '9 hours', 'COMPLETED', NOW(), NULL),
+       ('Admin_Sys', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '8 hours', 'SKIPPED', NOW(), NULL),
+       ('Scheduler', NOW() - INTERVAL '6 hours', NULL, 'IN_PROGRESS', NOW(), NULL),
+       ('Admin_Dev', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '235 minutes', 'COMPLETED', NOW(), NULL),
+       ('Admin_Sys', NOW() - INTERVAL '2 hours', NULL, 'FAILED', NOW(), NULL),
+       ('Scheduler', NOW() - INTERVAL '1 hour', NULL, 'IN_PROGRESS', NOW(), NULL),
+       ('Admin_Sys', NOW(), NULL, 'IN_PROGRESS', NOW(), NULL);
 
 SELECT *
 FROM employee;
