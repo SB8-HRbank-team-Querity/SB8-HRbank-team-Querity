@@ -2,12 +2,14 @@ package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentCreateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentUpdateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,6 +26,17 @@ public class DepartmentController {
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
+            .body(departmentDto);
+    }
+
+    // 부서 정보 수정
+    public ResponseEntity<DepartmentDto> update(
+        @RequestParam("departmentId") Long departmentId,
+        @RequestBody DepartmentUpdateRequest departmentUpdateRequest) {
+        DepartmentDto departmentDto = departmentService.update(departmentId, departmentUpdateRequest);
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
             .body(departmentDto);
     }
 }
