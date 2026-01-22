@@ -63,4 +63,9 @@ public class BackupHistory extends BaseEntity {
         this.status = BackupHistoryStatus.FAILED;
         this.endedAt = Instant.now();
     }
+
+    public void skip() {
+        this.status = BackupHistoryStatus.SKIPPED;
+        this.endedAt = Instant.now();
+    }
 }

@@ -41,8 +41,11 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         //백업이 불필요한 경우
         if (!needBackup) {
             BackupHistory skippedHisotry = new BackupHistory(workerIp, BackupHistoryStatus.SKIPPED);
-            skippedHisotry.complete(null);
+
+            skippedHisotry.skip();
+
             BackupHistory savedHisotry = backupHistoryRepository.save(skippedHisotry);
+
             return backupHistoryMapper.toDto(savedHisotry);
         }
 
