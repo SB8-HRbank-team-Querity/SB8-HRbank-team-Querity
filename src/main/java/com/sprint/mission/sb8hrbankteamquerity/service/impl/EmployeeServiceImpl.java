@@ -8,6 +8,9 @@ import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +18,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Base64;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -35,17 +37,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // 정렬
         String sortField = Dto.sortField() == null ? "name" : Dto.sortField();
-
-        Comparator<Employee> comparator = switch (sortField) {
-            case "employeeNumber" -> Comparator.comparing(Employee::getEmployeeNumber);
-            case "hireDate" -> Comparator.comparing(Employee::getHireDate);
-            default -> Comparator.comparing(Employee::getName);
-        };
-
-        if ("desc".equalsIgnoreCase(Dto.sortDirection())) {
-            comparator = comparator.reversed();
-        }
-
+        Sort.Direction direction = "desc".equalsIgnoreCase(Dto.sortDirection()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortField);
 
         Instant from = Dto.hireDateFrom() == null ? null :
             LocalDate.parse(Dto.hireDateFrom()).atStartOfDay().toInstant(ZoneOffset.UTC);
@@ -53,19 +46,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Instant to = Dto.hireDateTo() == null ? null :
             LocalDate.parse(Dto.hireDateTo()).atStartOfDay().toInstant(ZoneOffset.UTC);
 
+        Pageable pageable = PageRequest.of(0, size + 1, sort);
+
         // 조회
-        List<Employee> employees = employeeRepository.findAll()
-            .stream()
-            .filter(employee -> idAfter <= 0 || employee.getId() > idAfter)
-            .filter(employee -> Dto.nameOrEmail() == null || employee.getName().contains(Dto.nameOrEmail()) || employee.getEmail().contains(Dto.nameOrEmail()))
-            .filter(employee -> Dto.employeeNumber() == null || employee.getEmployeeNumber().contains(Dto.employeeNumber()))
-            .filter(employee -> Dto.departmentName() == null || employee.getDepartmentId().getName().contains(Dto.departmentName()))
-            .filter(employee -> Dto.position() == null || employee.getPosition().contains(Dto.position()))
-            .filter(employee -> Dto.hireDateFrom() == null || !employee.getHireDate().isBefore(from))
-            .filter(employee -> Dto.hireDateTo() == null || !employee.getHireDate().isAfter(to))
-            .filter(employee -> Dto.status() == null || employee.getStatus().equals(Dto.status()))
-            .sorted(comparator)
-            .toList();
+        List<Employee> employees = employeeRepository.findAllFilter(
+            idAfter, Dto.nameOrEmail(), Dto.employeeNumber(), Dto.departmentName(), Dto.position(), from, to, Dto.status(), pageable);
 
         boolean hasNext = employees.size() > size;
         List<EmployeeDto> content = employees.stream()
