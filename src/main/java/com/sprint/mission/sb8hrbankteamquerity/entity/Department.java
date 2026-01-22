@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +40,7 @@ public class Department {
     @Column(name = "established_date", nullable = false)
     private Date establishedDate;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "departmentId")
     private List<Employee> employees = new ArrayList<>();
 
     @CreatedDate

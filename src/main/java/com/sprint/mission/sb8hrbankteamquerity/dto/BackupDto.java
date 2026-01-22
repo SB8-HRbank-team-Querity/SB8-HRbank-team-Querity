@@ -5,7 +5,8 @@ public record BackupDto(
     String worker,
     String startedAt,
     String endedAt,
-    String status
+    String status,
+    Long fileId
 
 ) {
 }

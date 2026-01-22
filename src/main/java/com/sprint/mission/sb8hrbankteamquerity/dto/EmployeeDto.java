@@ -1,6 +1,7 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto;
 
-import com.sprint.mission.sb8hrbankteamquerity.entity.Employee.Status;
+import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
 
 import java.time.Instant;
 
@@ -13,7 +14,7 @@ public record EmployeeDto(
     String departmentName,
     String position,
     Instant hireDate,
-    Status status,
+    EmployeeStatus status,
     FileMeta profileImageId
 ) {
 }
