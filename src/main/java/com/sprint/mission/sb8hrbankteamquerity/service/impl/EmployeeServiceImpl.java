@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -67,4 +68,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return new EmployeePageResponse(content, nextCursor, nextIdAfter, size, totalElements, hasNext);
     }
 
+    @Transactional(readOnly = true)
+    public EmployeeDto findById(Long id) {
+        return employeeRepository.findById(id)
+            .map(employeeMapper::toDto)
+            .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+    }
 }
