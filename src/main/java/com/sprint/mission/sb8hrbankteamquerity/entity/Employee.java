@@ -16,12 +16,6 @@ import java.util.Random;
 @EntityListeners(AuditingEntityListener.class)
 public class Employee extends BaseEntity {
 
-    public enum Status {
-        ACTIVE,
-        ONLEAVE,
-        RESIGNED
-    }
-
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
@@ -39,7 +33,7 @@ public class Employee extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50, nullable = false)
-    private Status status = Status.ACTIVE;
+    private EmployeeStatus status = EmployeeStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
