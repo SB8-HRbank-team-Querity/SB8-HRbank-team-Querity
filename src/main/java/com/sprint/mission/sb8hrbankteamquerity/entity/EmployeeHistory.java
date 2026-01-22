@@ -1,25 +1,18 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
+import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.mapstruct.Builder;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
-
 @Entity
-@Table(name = "employee_history")
 @Getter
+@Table(name = "employee_history")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class EmployeeHistory {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class EmployeeHistory  extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private EmployeeHistoryType type;
@@ -29,10 +22,6 @@ public class EmployeeHistory {
 
     @Column(name = "ip_address",nullable = false, length = 200)
     private String ip_address;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant created_at;
 
     @Column(name = "changed_detail",nullable = false )
     private String changed_detail;
