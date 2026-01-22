@@ -2,26 +2,12 @@ package com.sprint.mission.sb8hrbankteamquerity.mapper;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-@RequiredArgsConstructor
-public class DepartmentMapper {
+@Mapper(componentModel = "spring")
+public interface DepartmentMapper {
 
-    public DepartmentDto toDto(Department department) {
-        if (department == null) {
-            return null;
-        }
-
-        int employeeCount = (department.getEmployees() != null) ? department.getEmployees().size() : 0;
-
-        return new DepartmentDto(
-            department.getId(),
-            department.getName(),
-            department.getDescription(),
-            department.getEstablishedDate(),
-            employeeCount
-        );
-    }
+    @Mapping(target = "employeeCount", expression = "java(department.getEmployees() == null ? 0 : department.getEmployees().size())")
+    DepartmentDto toDto(Department department);
 }
