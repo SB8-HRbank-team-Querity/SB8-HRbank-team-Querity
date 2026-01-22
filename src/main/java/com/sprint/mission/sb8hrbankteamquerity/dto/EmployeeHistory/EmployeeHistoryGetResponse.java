@@ -4,7 +4,7 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 
 import java.time.Instant;
 
-public record EmployeeHistoryDTO(
+public record EmployeeHistoryGetResponse(
     Long id,
     EmployeeHistoryType type,
     String memo,
