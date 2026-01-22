@@ -3,7 +3,7 @@ package com.sprint.mission.sb8hrbankteamquerity.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
@@ -11,19 +11,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @Entity
 @Table(name = "backup_history")
-public class BackupHistory {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private Integer id;
-
-    @CreatedDate
-    @Column(
-        name = "created_at",
-        updatable = false
-    )
-    private Instant createdAt;
+@EntityListeners(AuditingEntityListener.class)
+public class BackupHistory extends BaseEntity {
 
     @Column(
         name = "worker",
@@ -60,7 +49,6 @@ public class BackupHistory {
     public BackupHistory(String worker, HistoryStatus status, FileMeta fIleMeta) {
         this.worker = worker;
         this.status = status;
-        //
         this.fileMeta = fIleMeta;
     }
 
