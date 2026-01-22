@@ -30,7 +30,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeePageResponse findAll(EmployeeSearchDto Dto) {
 
         //페이지네이션
-        int size = Dto.size() > 0 ? Dto.size() : 10;
+        int size = (Dto.size() != null && Dto.size() > 0) ? Dto.size() : 10;
         Long idAfter = Dto.idAfter() == null ? 0 : Dto.idAfter();
 
         // 정렬
