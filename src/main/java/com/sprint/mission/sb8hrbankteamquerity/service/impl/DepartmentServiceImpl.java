@@ -64,17 +64,26 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional(readOnly = true)
     public DepartmentDto find(Long departmentId) {
-        return null;
+        Department department = departmentRepository.findById(departmentId)
+            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+
+        return departmentMapper.toDto(department);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<DepartmentDto> findAll() {
-        return List.of();
+        // N+1 문제 방지를 위해 findAll 메서드가 아닌 fetch join 메서드 사용
+        return departmentRepository.findAllWithEmployees().stream()
+            .map(departmentMapper::toDto)
+            .toList();
     }
 
     @Override
     public void delete(Long departmentId) {
+        Department department = departmentRepository.findById(departmentId)
+            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
 
+        departmentRepository.delete(department);
     }
 }
