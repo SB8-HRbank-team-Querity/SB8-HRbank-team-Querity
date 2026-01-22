@@ -38,7 +38,7 @@ public class Employee extends BaseUpdatableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
-    private Department department;
+    private Department departmentId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
@@ -48,20 +48,20 @@ public class Employee extends BaseUpdatableEntity {
         this.name = name;
         this.email = email;
         this.employeeNumber = employeeNumber;
-        this.department = department;
+        this.departmentId = departmentId;
         this.position = position;
         this.hireDate = hireDate;
         this.profileImageId = profileImageId;
     }
 
-    public static Employee create(String name, String email, Department department, String position, Instant hireDate) {
+    public static Employee create(String name, String email, Department departmentId, String position, Instant hireDate) {
         String employeeNumber = createEmployeeNumber(hireDate);
-        return new Employee(name, email, employeeNumber, department, position, hireDate, null);
+        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, null);
     }
 
-    public static Employee createProfile(String name, String email, Department department, String position, Instant hireDate, FileMeta profileImageId) {
+    public static Employee createProfile(String name, String email, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
         String employeeNumber = createEmployeeNumber(hireDate);
-        return new Employee(name, email, employeeNumber, department, position, hireDate, profileImageId);
+        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, profileImageId);
     }
 
     private static String createEmployeeNumber(Instant hireDate) {

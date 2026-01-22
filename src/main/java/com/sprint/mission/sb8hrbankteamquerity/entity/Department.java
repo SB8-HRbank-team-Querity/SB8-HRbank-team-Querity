@@ -1,24 +1,17 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "department")
@@ -40,7 +33,7 @@ public class Department {
     @Column(name = "established_date", nullable = false)
     private Date establishedDate;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "departmentId")
     private List<Employee> employees = new ArrayList<>();
 
     @CreatedDate
@@ -58,15 +51,15 @@ public class Department {
     }
 
     public void update(String newName, String newDescription, Date newEstablishedDate) {
-        if(newName != null && !newName.equals(this.name)) {
+        if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
         }
 
-        if(newDescription != null && !newDescription.equals(this.description)) {
+        if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
         }
 
-        if(newEstablishedDate != null && !newEstablishedDate.equals(this.establishedDate)) {
+        if (newEstablishedDate != null && !newEstablishedDate.equals(this.establishedDate)) {
             this.establishedDate = newEstablishedDate;
         }
     }

@@ -9,6 +9,10 @@ public record EmployeeSearchDto(
     String position,
     String hireDateFrom,
     String hireDateTo,
-    EmployeeStatus employeeStatus
+    EmployeeStatus status,
+    Long idAfter,
+    Integer size,
+    String sortField,
+    String sortDirection
 ) {
 }
