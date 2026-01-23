@@ -3,7 +3,6 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
@@ -108,27 +107,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직원입니다."));
 
-        String name = request.name() == null ? employee.getName() : request.name();
-        String email = request.email() == null ? employee.getEmail() : request.email();
-        Long departmentId = request.departmentId() == null ? employee.getDepartmentId().getId() : request.departmentId();
-        String position = request.position() == null ? employee.getPosition() : request.position();
-        Instant hireDate = request.hireDate() == null ? employee.getHireDate() : request.hireDate();
-        EmployeeStatus status = request.status() == null ? employee.getStatus() : request.status();
-
         Long oldProfileId = null;
         if (profileId != null) {
             oldProfileId = employee.getProfileImageId();
         }
 
-
-        if (!email.equals(employee.getEmail()) && employeeRepository.existsByEmail(email)) {
+        if (!request.email().equals(employee.getEmail()) && employeeRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
-        Department department = departmentRepository.findById(departmentId)
+        Department department = departmentRepository.findById(request.departmentId())
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
 
-
-        employee.update(name, email, department, position, hireDate, status, profileId);
+        employee.update(request.name(), request.email(), department, request.position(), request.hireDate(), request.status(), profileId);
         employeeRepository.saveAndFlush(employee);
 
         if (profileId != null && oldProfileId != null) {
