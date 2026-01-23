@@ -3,6 +3,8 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
+import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
@@ -21,7 +23,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -79,16 +80,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDto findById(Long id) {
         return employeeRepository.findById(id)
             .map(employeeMapper::toDto)
-            .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
     }
 
     @Override
     public EmployeeDto create(EmployeeCreateRequest request, Long id) {
         if (employeeRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new BusinessException(EmployeeErrorCode.EMP_DUPLICATE_EMAIL);
         }
         Department department = departmentRepository.findById(request.departmentId())
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
+            //부서를 찾을 수 없는 예외로 임시로 적은 것이고 부서 예외처리가 완성되면 수정할 예정입니다.
+            .orElseThrow(() -> new BusinessException(DEPTErrorCode.DEPT_NOT_FOUND));
 
         Employee employee;
         if (id == null) {
@@ -105,7 +107,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDto update(Long id, EmployeeUpdateRequest request, Long profileId) {
 
         Employee employee = employeeRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직원입니다."));
+            .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
 
         Long oldProfileId = null;
         if (profileId != null) {
@@ -113,10 +115,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         if (!request.email().equals(employee.getEmail()) && employeeRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new BusinessException(EmployeeErrorCode.EMP_DUPLICATE_EMAIL);
         }
         Department department = departmentRepository.findById(request.departmentId())
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
+            //부서를 찾을 수 없는 예외로 임시로 적은 것이고 부서 예외처리가 완성되면 수정할 예정입니다.
+            .orElseThrow(() -> new BusinessException(DEPTErrorCode.DEPT_NOT_FOUND));
 
         employee.update(request.name(), request.email(), department, request.position(), request.hireDate(), request.status(), profileId);
         employeeRepository.saveAndFlush(employee);
@@ -136,7 +139,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void delete(Long id) {
         Employee employee = employeeRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직원입니다."));
+            .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
 
         //직원이 fk, 먼저 삭제
         employeeRepository.deleteById(id);
