@@ -10,6 +10,6 @@ public interface BackupHistoryMapper {
 
     @Mapping(target = "fileId", source = "fileMeta.id")
     @Mapping(target = "status", expression = "java(backupHistory.getStatus().getDescription())")
-    BackupDto toDto(BackupHistory backupHistory);
+    BackupHistoryDto toDto(BackupHistory backupHistory);
 
 }
