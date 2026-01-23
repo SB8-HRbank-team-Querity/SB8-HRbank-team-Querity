@@ -7,7 +7,7 @@ import java.time.Instant;
 public record EmployeeUpdateRequest(
     String name,
     String email,
-    int departmentId,
+    Long departmentId,
     String position,
     Instant hireDate,
     EmployeeStatus status,

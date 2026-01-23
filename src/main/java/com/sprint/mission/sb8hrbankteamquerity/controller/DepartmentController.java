@@ -1,10 +1,11 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
+import com.sprint.mission.sb8hrbankteamquerity.dto.department.CursorPageResponseDepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentCreateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentPageRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentUpdateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,12 +63,13 @@ public class DepartmentController {
 
     // 부서 다건 조회
     @GetMapping
-    public ResponseEntity<List<DepartmentDto>> findAll() {
-        List<DepartmentDto> departmentDtoList = departmentService.findAll();
+    public ResponseEntity<CursorPageResponseDepartmentDto> findAll(DepartmentPageRequest departmentPageRequest) {
+
+        CursorPageResponseDepartmentDto departmentDto = departmentService.findAll(departmentPageRequest);
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(departmentDtoList);
+            .body(departmentDto);
     }
 
     // 부서 삭제

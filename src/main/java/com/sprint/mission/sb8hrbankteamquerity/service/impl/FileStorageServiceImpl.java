@@ -1,6 +1,8 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
+import com.sprint.mission.sb8hrbankteamquerity.exception.FileErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import jakarta.annotation.PostConstruct;
@@ -13,6 +15,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileStorageServiceImpl implements FileStorageService {
@@ -41,7 +45,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         try {
             Files.createDirectories(uploadPath);
         } catch (Exception e) {
-            throw new RuntimeException("업로드 디렉토리 생성 실패 : " + e.getMessage());
+            throw new BusinessException(FileErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -55,7 +59,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         // 파일명 유효성 검사 (제거 잘 됐는지)
         if (originName.contains("..")) {
-            throw new RuntimeException("잘못된 파일명입니다" + originName);
+            throw new BusinessException(FileErrorCode.INVALID_FILE_NAME);
         }
 
         // 저장될 파일명 생성
@@ -91,10 +95,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
-                throw new RuntimeException("파일을 읽을 수 없습니다." + fileMeta.getOriginName());
+                throw new BusinessException(FileErrorCode.FILE_DOWNLOAD_FAILED);
             }
         } catch (MalformedURLException e) { // 잘못된 형식의 URL일 경우
-            throw new RuntimeException("파일 경로가 잘못되었습니다." + fileMeta.getPath(), e);
+            log.error("파일 경로 오류 : {}, 경로 : {}", e, fileMeta.getPath());
+            throw new BusinessException(FileErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -102,6 +107,6 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Transactional(readOnly = true)
     public FileMeta getFileMeta(Long fileId) {
         return fileRepository.findById(fileId)
-            .orElseThrow(() -> new RuntimeException("파일을 찾을 수 없습니다. ID: " + fileId));
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
     }
 }

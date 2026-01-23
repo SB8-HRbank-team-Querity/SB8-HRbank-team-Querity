@@ -1,7 +1,9 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
+import com.sprint.mission.sb8hrbankteamquerity.dto.department.CursorPageResponseDepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentCreateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentPageRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentUpdateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.DepartmentMapper;
@@ -10,6 +12,9 @@ import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
 import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +33,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Date establishedDate = departmentCreateRequest.establishedDate();
 
         // 부서 이름이 중복일 경우
-        if (departmentRepository.existsByName(name)){
+        if (departmentRepository.existsByName(name)) {
             throw new IllegalArgumentException("Department already exists");
         }
 
@@ -51,7 +56,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Date newEstablishedDate = departmentUpdateRequest.newEstablishedDate();
 
         // 바꾸려는 부서의 이름이 이미 존재하는 경우 오류 처리
-        if (departmentRepository.existsByName(newName)){
+        if (departmentRepository.existsByName(newName)) {
             throw new IllegalArgumentException("Department already exists");
         }
 
@@ -72,17 +77,71 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DepartmentDto> findAll() {
-        // N+1 문제 방지를 위해 findAll 메서드가 아닌 fetch join 메서드 사용
-        return departmentRepository.findAllWithEmployees().stream()
-            .map(departmentMapper::toDto)
-            .toList();
+    public CursorPageResponseDepartmentDto findAll(DepartmentPageRequest departmentPageRequest) {
+        // 데이터 조회
+        int size = departmentPageRequest.size() != null && departmentPageRequest.size() > 0
+            ? departmentPageRequest.size() : 10;
+        String sortField = departmentPageRequest.sortField() == null ? "establishedDate"
+            : departmentPageRequest.sortField();
+        Sort.Direction direction =
+            "desc".equalsIgnoreCase(departmentPageRequest.sortDirection()) ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        // 정렬값이 같을 경우 id 오름차순 정렬
+        Sort sort = Sort.by(direction, sortField).and(Sort.by(Sort.Direction.ASC, "id"));
+
+        Pageable pageable = PageRequest.of(0, size + 1, sort);
+
+        boolean isAcs = direction.isAscending();
+        List<Department> departments = departmentRepository.findAllByCursor(
+            departmentPageRequest.nameOrDescription(),
+            departmentPageRequest.idAfter(),
+            isAcs,
+            pageable
+        );
+
+        // 다음 페이지 여부 확인
+        // 조회된 데이터의 size가 한 페이지의 데이터 size보다 크다면 다음 데이터가 더 있다는 의미
+        boolean hasNext = departments.size() > size;
+
+        // 응답에 포함할 실제 데이터 계산
+        // departments로 조회한 부서 목록은 17개이지만,
+        // page 요청의 size가 15개라면
+        // 2개는 제외하고 15개만 반환!
+        List<Department> content =
+            hasNext ? departments.subList(0, size) : departments;
+
+        // 다음 페이지를 위한 정보
+        Department lastItem =
+            (hasNext && !content.isEmpty()) ? content.get(content.size() - 1) : null;
+        Long nextIdAfter = (lastItem != null) ? lastItem.getId() : null;
+        String nextCursor = (lastItem != null) ? String.valueOf(lastItem.getId()) : null;
+
+        // 전체 개수 조회
+        long totalElements = departmentRepository.countByNameOrDescription(
+            departmentPageRequest.nameOrDescription());
+
+        // 변환 및 반한
+        return new CursorPageResponseDepartmentDto(
+            content.stream().map(departmentMapper::toDto).toList(),
+            nextCursor,
+            nextIdAfter,
+            size,
+            totalElements,
+            hasNext
+        );
     }
 
     @Override
     public void delete(Long departmentId) {
         Department department = departmentRepository.findById(departmentId)
             .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+
+        // 부서의 직원이 1명 이상일 경우 부서 삭제 불가
+        if (!department.getEmployees().isEmpty()) {
+            throw new IllegalStateException(
+                "Department cannot be deleted, because the number of employees is not 0");
+        }
 
         departmentRepository.delete(department);
     }

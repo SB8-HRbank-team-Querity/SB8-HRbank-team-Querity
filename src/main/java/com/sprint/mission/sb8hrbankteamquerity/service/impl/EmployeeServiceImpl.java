@@ -1,14 +1,13 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeCreateRequest;
-import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeePageResponse;
-import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeSearchDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
+import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
+import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +28,9 @@ import java.util.NoSuchElementException;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final EmployeeHistoryRepository employeeHistoryRepository;
     private final DepartmentRepository departmentRepository;
+    private final FileRepository fileRepository;
     private final EmployeeMapper employeeMapper;
 
 
@@ -97,6 +98,38 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         Employee employeeSaved = employeeRepository.save(employee);
         return employeeMapper.toDto(employeeSaved);
+    }
+
+
+    @Override
+    public EmployeeDto update(Long id, EmployeeUpdateRequest request, Long profileId) {
+
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직원입니다."));
+
+        Long oldProfileId = null;
+        if (profileId != null) {
+            oldProfileId = employee.getProfileImageId();
+        }
+
+        if (!request.email().equals(employee.getEmail()) && employeeRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+        Department department = departmentRepository.findById(request.departmentId())
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
+
+        employee.update(request.name(), request.email(), department, request.position(), request.hireDate(), request.status(), profileId);
+        employeeRepository.saveAndFlush(employee);
+
+        if (profileId != null && oldProfileId != null) {
+            fileRepository.deleteById(oldProfileId);
+        }
+
+        if (request.memo() != null && !request.memo().isEmpty()) {
+            // EmployeeHistoty save가 완성되면 구현할 예정입니다.
+        }
+
+        return employeeMapper.toDto(employee);
     }
 }
 
