@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.dto;
+package com.sprint.mission.sb8hrbankteamquerity.dto.employee;
 
 import java.time.Instant;
 
