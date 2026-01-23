@@ -1,6 +1,7 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BuckupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
@@ -8,6 +9,7 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.BackupHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.BackupHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
+import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.BackupHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,8 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     private final BackupHistoryRepository backupHistoryRepository;
     private final EmployeeHistoryRepository employeeHistoryRepository;
-    private final FileMetaRespoitory fileMetaRespoitory;
+    private final EmployeeRepository employeeRepository;
+
     private final BackupHistoryMapper backupHistoryMapper;
 
     @Override
@@ -67,12 +70,12 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     }
 
     @Override
-    public List<BackupDto> findAll() {
+    public List<BackupHistoryDto> findAll() {
         return List.of();
     }
 
     @Override
-    public List<BackupDto> findLatestByStatus() {
+    public List<BackupHistoryDto> findLatestByStatus() {
         return List.of();
     }
 
@@ -80,7 +83,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     //백업 스킵
     @Transactional
-    protected BackupDto savedSkippedHisotry(String workerIp) {
+    protected BackupHistoryDto savedSkippedHisotry(String workerIp) {
         BackupHistory backupHistory = new BackupHistory(workerIp, BackupHistoryStatus.SKIPPED);
         backupHistory.skip();
         return backupHistoryMapper.toDto(backupHistoryRepository.save(backupHistory));
