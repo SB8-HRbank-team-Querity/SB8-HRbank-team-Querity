@@ -40,28 +40,30 @@ public class Employee extends BaseUpdatableEntity {
     @JoinColumn(name = "department_id", nullable = false)
     private Department departmentId;
 
-    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
-    private FileMeta profileImageId;
+    private Long profileImageId;
 
-    public Employee(String name, String email, String employeeNumber, Department department, String position, Instant hireDate, FileMeta profileImageId) {
+    public Employee(String name, String email, String employeeNumber, Department departmentId, String position, Instant hireDate, EmployeeStatus status, Long profileImageId) {
         this.name = name;
         this.email = email;
         this.employeeNumber = employeeNumber;
         this.departmentId = departmentId;
         this.position = position;
         this.hireDate = hireDate;
+        this.status = status;
         this.profileImageId = profileImageId;
     }
 
     public static Employee create(String name, String email, Department departmentId, String position, Instant hireDate) {
         String employeeNumber = createEmployeeNumber(hireDate);
-        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, null);
+        EmployeeStatus status = EmployeeStatus.ACTIVE;
+        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, status, null);
     }
 
-    public static Employee createProfile(String name, String email, Department departmentId, String position, Instant hireDate, FileMeta profileImageId) {
+    public static Employee createProfile(String name, String email, Department departmentId, String position, Instant hireDate, Long profileImageId) {
         String employeeNumber = createEmployeeNumber(hireDate);
-        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, profileImageId);
+        EmployeeStatus status = EmployeeStatus.ACTIVE;
+        return new Employee(name, email, employeeNumber, departmentId, position, hireDate, status, profileImageId);
     }
 
     private static String createEmployeeNumber(Instant hireDate) {
@@ -71,4 +73,5 @@ public class Employee extends BaseUpdatableEntity {
     }
 
 }
+
 
