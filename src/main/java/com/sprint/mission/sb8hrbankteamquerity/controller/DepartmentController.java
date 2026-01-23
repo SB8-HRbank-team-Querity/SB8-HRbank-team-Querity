@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -64,22 +63,9 @@ public class DepartmentController {
 
     // 부서 다건 조회
     @GetMapping
-    public ResponseEntity<CursorPageResponseDepartmentDto> findAll(
-        @RequestParam(required = false) String nameOrDescription,
-        @RequestParam(required = false) Long idAfter,
-        @RequestParam(required = false) String cursor,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "establishedDate") String sortField,
-        @RequestParam(defaultValue = "asc") String sortDirection
-    ) {
-        DepartmentPageRequest request = new DepartmentPageRequest(nameOrDescription,
-            idAfter,
-            cursor,
-            size,
-            sortField,
-            sortDirection);
+    public ResponseEntity<CursorPageResponseDepartmentDto> findAll(DepartmentPageRequest departmentPageRequest) {
 
-        CursorPageResponseDepartmentDto departmentDto = departmentService.findAll(request);
+        CursorPageResponseDepartmentDto departmentDto = departmentService.findAll(departmentPageRequest);
 
         return ResponseEntity
             .status(HttpStatus.OK)

@@ -12,13 +12,18 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     boolean existsByName(String name);
 
     @Query("""
-        SELECT d FROM Department d
-        WHERE (:nameOrDesc IS NULL OR d.name LIKE %:nameOrDesc% OR d.description LIKE %:nameOrDesc%)
-        AND (:idAfter IS NULL OR d.id > :idAfter)
-    """)
+    SELECT d FROM Department d
+    WHERE (:nameOrDesc IS NULL OR d.name LIKE %:nameOrDesc% OR d.description LIKE %:nameOrDesc%)
+    AND (
+        :idAfter IS NULL
+        OR (:isAsc = true AND d.id > :idAfter)
+        OR (:isAsc = false AND d.id < :idAfter)
+    )
+""")
     List<Department> findAllByCursor(
         @Param("nameOrDesc") String nameOrDescription,
         @Param("idAfter") Long idAfter,
+        @Param("isAsc") boolean isAsc,
         Pageable pageable
     );
 

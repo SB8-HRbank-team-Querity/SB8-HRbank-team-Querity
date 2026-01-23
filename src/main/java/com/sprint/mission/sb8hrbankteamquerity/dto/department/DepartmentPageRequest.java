@@ -4,7 +4,7 @@ public record DepartmentPageRequest(
     String nameOrDescription,
     Long idAfter,
     String cursor,
-    int size,
+    Integer size,
     String sortField,
     String sortDirection
 ) {
