@@ -1,7 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.BackupDto;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BuckupHistory.BackupHistoryDto;
 
 import java.net.UnknownHostException;
 import java.util.List;

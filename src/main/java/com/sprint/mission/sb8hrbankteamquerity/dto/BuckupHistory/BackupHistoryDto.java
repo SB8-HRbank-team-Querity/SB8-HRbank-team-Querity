@@ -1,6 +1,6 @@
-package com.sprint.mission.sb8hrbankteamquerity.dto;
+package com.sprint.mission.sb8hrbankteamquerity.dto.BuckupHistory;
 
-public record BackupDto(
+public record BackupHistoryDto(
     int id,
     String worker,
     String startedAt,
