@@ -1,10 +1,13 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
+import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeCreateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeePageResponse;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeSearchDto;
+import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
+import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,9 @@ import java.util.NoSuchElementException;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
     private final EmployeeMapper employeeMapper;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -68,10 +73,30 @@ public class EmployeeServiceImpl implements EmployeeService {
         return new EmployeePageResponse(content, nextCursor, nextIdAfter, size, totalElements, hasNext);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public EmployeeDto findById(Long id) {
         return employeeRepository.findById(id)
             .map(employeeMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
     }
+
+    @Override
+    public EmployeeDto create(EmployeeCreateRequest request, Long id) {
+        if (employeeRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+        Department department = departmentRepository.findById(request.departmentId())
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
+
+        Employee employee;
+        if (id == null) {
+            employee = Employee.create(request.name(), request.email(), department, request.position(), request.hireDate());
+        } else {
+            employee = Employee.createProfile(request.name(), request.email(), department, request.position(), request.hireDate(), id);
+        }
+        Employee employeeSaved = employeeRepository.save(employee);
+        return employeeMapper.toDto(employeeSaved);
+    }
 }
+
