@@ -28,22 +28,22 @@ public class EmployeeHistoryController {
         return ResponseEntity.ok(employeeHistoryDTO);
     }
 
-    @GetMapping
-    public ResponseEntity<List<EmployeeHistoryGetResponse>> getAllEmployeeHistory(){
-        List<EmployeeHistoryGetResponse> employeeHistoryDTOList =
-            employeeHistoryService.getAllEmployeeHistory();
-
-        return ResponseEntity.ok(employeeHistoryDTOList);
-    }
-
-
-    @GetMapping(name = "")
-    public ResponseEntity<EmployeeHistoryGetResponse> getByIdEmployeeHistory(
-        @PathVariable Long employeeHistoryId
-    ){
-        EmployeeHistoryGetResponse employeeHistoryList =
-            employeeHistoryService.getByIdEmployeeHistory(employeeHistoryId);
-
-        return ResponseEntity.ok(employeeHistoryList);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<EmployeeHistoryGetResponse>> getAllEmployeeHistory(){
+//        List<EmployeeHistoryGetResponse> employeeHistoryDTOList =
+//            employeeHistoryService.getAllEmployeeHistory();
+//
+//        return ResponseEntity.ok(employeeHistoryDTOList);
+//    }
+//
+//
+//    @GetMapping(name = "")
+//    public ResponseEntity<EmployeeHistoryGetResponse> getByIdEmployeeHistory(
+//        @PathVariable Long employeeHistoryId
+//    ){
+//        EmployeeHistoryGetResponse employeeHistoryList =
+//            employeeHistoryService.getByIdEmployeeHistory(employeeHistoryId);
+//
+//        return ResponseEntity.ok(employeeHistoryList);
+//    }
 }
