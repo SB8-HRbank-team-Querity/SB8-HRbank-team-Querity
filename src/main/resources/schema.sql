@@ -9,7 +9,7 @@ CREATE TABLE department
 (
     id               serial PRIMARY KEY,
     name             varchar(100) NOT NULL UNIQUE,
-    description      text,
+    description      text NOT NULL,
     established_date timestamptz  NOT NULL,
     created_at       timestamptz  NOT NULL,
     updated_at       timestamptz  NOT NULL
