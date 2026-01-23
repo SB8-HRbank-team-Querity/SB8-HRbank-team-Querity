@@ -13,6 +13,8 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface EmployeeMapper {
     @Mapping(source = "departmentId.id", target = "departmentId")
-    @Mapping(source = "profileImageId.id", target = "profileImageId")
+    @Mapping(source = "departmentId.name", target = "departmentName")
+    @Mapping(source = "profileImageId", target = "profileImageId")
     EmployeeDto toDto(Employee employee);
 }
+

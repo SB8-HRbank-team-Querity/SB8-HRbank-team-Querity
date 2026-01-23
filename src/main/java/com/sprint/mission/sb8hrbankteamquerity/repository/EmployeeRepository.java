@@ -35,4 +35,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query("SELECT e FROM Employee e JOIN FETCH e.departmentId")
     Page<Employee> findAllWithDepartment(Pageable pageable);
+    Boolean existsByEmail(String email);
 }
+
