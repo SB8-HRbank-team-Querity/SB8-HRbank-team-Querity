@@ -1,15 +1,15 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryGetResponse;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryResponse;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -19,33 +19,67 @@ import java.util.List;
 public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final EmployeeHistoryMapper employeeHistoryMapper;
+    private final HttpServletRequest httpServletRequest;
 
     @Override
-    public EmployeeHistoryGetResponse saveEmployeeHistory(EmployeeHistorySaveRequest employeeHistorySaveRequest) {
-        // 필요한 로직이 저장이 됐는지 확인만 있으면 될거 같은데
-        EmployeeHistory employeeHistory =
-            employeeHistoryRepository.save(
-                employeeHistoryMapper.toEntity(employeeHistorySaveRequest));
+    public EmployeeHistoryResponse saveEmployeeHistory(EmployeeHistorySaveRequest save) {
 
-        return employeeHistoryMapper.toGetResponse(employeeHistory);
+        String clientIp = getClientIp();
+
+        EmployeeHistory entity = EmployeeHistory.builder()
+            .type(save.type())
+            .memo(save.memo())
+            .ip_address(clientIp)
+            .changed_detail(save.changed_detail())
+            .employee_name(save.employee_name())
+            .employee_number(save.employee_number())
+            .build();
+
+        return employeeHistoryMapper.toGetResponse(
+            employeeHistoryRepository.save(entity)
+        );
     }
 
     @Override
-    public List<EmployeeHistoryGetResponse> getAllEmployeeHistory() {
-        List<EmployeeHistoryGetResponse> employeeHistoryGetResponseList =
+    public List<EmployeeHistoryResponse> getAllEmployeeHistory() {
+        List<EmployeeHistoryResponse> employeeHistoryResponseList =
             employeeHistoryRepository.findAll().stream().
                 map(employeeHistoryMapper::toGetResponse).toList();
 
-        return employeeHistoryGetResponseList;
+        return employeeHistoryResponseList;
     }
 
 
     @Override
-    public EmployeeHistoryGetResponse getByIdEmployeeHistory(Long employeeHistoryId) {
+    public EmployeeHistoryResponse getByIdEmployeeHistory(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
-            orElseThrow(()-> new NullPointerException("찾을 수 없는 이력입니다."));
+                orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
 
         return employeeHistoryMapper.toGetResponse(employeeHistory);
+    }
+
+
+    private String getClientIp() {
+        String[] headerCandidates = {
+            "X-Forwarded-For",
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED",
+            "HTTP_VIA"
+        };
+
+        for (String header : headerCandidates) {
+            String ip = httpServletRequest.getHeader(header);
+            if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
+                return ip.split(",")[0].trim();
+            }
+        }
+        return httpServletRequest.getRemoteAddr();
     }
 }

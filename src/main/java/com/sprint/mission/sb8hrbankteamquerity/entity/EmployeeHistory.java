@@ -1,17 +1,20 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.Map;
 
 @Entity
 @Getter
+@Builder
 @Table(name = "employee_history")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @EntityListeners(AuditingEntityListener.class)
 public class EmployeeHistory extends BaseEntity {
     @Enumerated(EnumType.STRING)
@@ -24,21 +27,13 @@ public class EmployeeHistory extends BaseEntity {
     @Column(name = "ip_address", nullable = false, length = 200)
     private String ip_address;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "changed_detail", nullable = false)
-    private String changed_detail;
+    private Map<String, Object> changed_detail;
 
     @Column(name = "employee_name", nullable = false, length = 50)
     private String employee_name;
 
     @Column(name = "employee_number", columnDefinition = "jsonb", nullable = false, length = 50)
     private String employee_number;
-
-    public EmployeeHistory(EmployeeHistorySaveRequest emp) {
-        this.type = emp.type();
-        this.memo = emp.memo();
-        this.ip_address = emp.ip_address();
-        this.changed_detail = emp.changed_detail();
-        this.employee_name = emp.employee_name();
-        this.employee_number = emp.employee_number();
-    }
 }
