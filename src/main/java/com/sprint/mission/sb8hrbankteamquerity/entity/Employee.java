@@ -54,6 +54,16 @@ public class Employee extends BaseUpdatableEntity {
         this.profileImageId = profileImageId;
     }
 
+    public void update(String name, String email, Department departmentId, String position, Instant hireDate, EmployeeStatus status, Long profileImageId) {
+        this.name = name;
+        this.email = email;
+        this.departmentId = departmentId;
+        this.position = position;
+        this.hireDate = hireDate;
+        this.status = status;
+        this.profileImageId = profileImageId;
+    }
+
     public static Employee create(String name, String email, Department departmentId, String position, Instant hireDate) {
         String employeeNumber = createEmployeeNumber(hireDate);
         EmployeeStatus status = EmployeeStatus.ACTIVE;
