@@ -2,6 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.repository;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +33,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                                  Pageable pageable
     );
 
+    @Query("SELECT e FROM Employee e JOIN FETCH e.departmentId")
+    Page<Employee> findAllWithDepartment(Pageable pageable);
     Boolean existsByEmail(String email);
 }
 

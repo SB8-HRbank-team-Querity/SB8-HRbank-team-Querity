@@ -1,0 +1,11 @@
+ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태
+2,EMP202002,김철수,chulsu@company.com,인사부,대리,2020-02-15,ACTIVE
+1,EMP202001,홍길동,gildong@company.com,인사부,팀장,2020-01-01,ACTIVE
+5,EMP202102,최준호,junho@company.com,재무부,차장,2021-04-05,ACTIVE
+4,EMP202101,박지민,jimin@company.com,재무부,사원,2021-01-20,ACTIVE
+3,EMP202003,이영희,young@company.com,재무부,과장,2020-03-10,ACTIVE
+6,EMP202201,강미나,mina@company.com,영업부,대리,2022-05-12,ACTIVE
+7,EMP202202,윤도현,dh.yoon@company.com,마케팅부,사원,2022-06-01,ON_LEAVE
+8,EMP202301,정수지,suzi@company.com,기술부,주임,2023-02-11,ACTIVE
+10,EMP202303,송강호,gh.song@company.com,연구개발부,과장,2023-09-15,ACTIVE
+9,EMP202302,한가인,gain@company.com,연구개발부,팀장,2023-03-01,ACTIVE

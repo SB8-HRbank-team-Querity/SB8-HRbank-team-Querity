@@ -1,6 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.BuckupHistory.BackupHistoryDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.service.BackupHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
