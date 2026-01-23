@@ -13,6 +13,7 @@ public record ErrorResponse(
     String code,
     String errorKey,
     int numeric,
+    int status, // 프론트엔드 호환용 (HTTP Status Code)
     String title,
     String message,
     List<Detail> details,
@@ -29,6 +30,7 @@ public record ErrorResponse(
             code.getCode(),
             code.getErrorKey(),
             code.getNumeric(),
+            code.getHttpStatus().value(), // status 추가
             code.getHttpStatus().getReasonPhrase(),
             message,
             null,
@@ -45,6 +47,7 @@ public record ErrorResponse(
             code.getCode(),
             code.getErrorKey(),
             code.getNumeric(),
+            code.getHttpStatus().value(), // status 추가
             code.getHttpStatus().getReasonPhrase(),
             message,
             details,
@@ -61,6 +64,7 @@ public record ErrorResponse(
             code.getCode(),
             code.getErrorKey(),
             code.getNumeric(),
+            code.getHttpStatus().value(), // status 추가
             code.getHttpStatus().getReasonPhrase(),
             message,
             null,
