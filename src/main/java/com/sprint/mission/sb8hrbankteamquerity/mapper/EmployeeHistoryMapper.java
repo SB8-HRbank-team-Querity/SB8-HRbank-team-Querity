@@ -5,12 +5,10 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHisto
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,35 +17,28 @@ import java.util.Map;
     unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface EmployeeHistoryMapper {
+
     EmployeeHistoryResponse toGetResponse(EmployeeHistory employeeHistory);
 
-    @Mapping(target = "type", source = "type")
-    @Mapping(target = "memo", source = "memo")
-    @Mapping(target = "ip", source = "ip")
-    @Mapping(
-        target = "changed_detail",
-        expression = "java(toChangedDetail(employeeDto))"
-    )
-    @Mapping(target = "employee_name", source = "employeeDto.name")
-    @Mapping(target = "employee_number", source = "employeeDto.employeeNumber")
-    EmployeeHistorySaveRequest toSaveRequest(
-        EmployeeDto employeeDto,
-        EmployeeHistoryType type,
-        String memo,
-        String ip
-    );
+    EmployeeHistory toEntity(EmployeeHistorySaveRequest save);
 
-    default Map<String, Object> toChangedDetail(EmployeeDto dto) {
+    default Map<String, Object> toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto) {
         Map<String, Object> map = new HashMap<>();
 
-        map.put("hireDate", dto.hireDate());
-        map.put("name", dto.name());
-        map.put("position", dto.position());
-        map.put("departmentName", dto.departmentName());
-        map.put("email", dto.email());
-        map.put("employeeNumber", dto.employeeNumber());
-        map.put("status", dto.status());
+        compareAndAdd(map,"hireDate",oldDto.hireDate(),newDto.hireDate());
+        compareAndAdd(map,"name",oldDto.name(),newDto.name());
+        compareAndAdd(map,"position",oldDto.position(),newDto.position());
+        compareAndAdd(map,"departmentName",oldDto.departmentName(),newDto.departmentName());
+        compareAndAdd(map,"email",oldDto.email(),newDto.email());
+        compareAndAdd(map,"employeeNumber",oldDto.employeeNumber(),newDto.employeeNumber());
+        compareAndAdd(map,"status",oldDto.status(),newDto.status());
 
         return map;
+    }
+
+    private void compareAndAdd(Map<String, Object> map, String key, Object oldValue, Object newValue) {
+        if (newValue != null && !newValue.equals(oldValue)) {
+            map.put(key, oldValue);
+        }
     }
 }

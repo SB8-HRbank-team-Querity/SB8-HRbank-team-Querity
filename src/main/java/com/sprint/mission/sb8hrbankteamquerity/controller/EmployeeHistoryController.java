@@ -15,14 +15,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/employeeHistory")
 public class EmployeeHistoryController {
-    private final EmployeeHistoryService service;
-
-    // 그러고 보니 화면에서 쓸거면 json 다시 변형시켜야 되네...
+    private final EmployeeHistoryService employeeHistoryService;
 
     @GetMapping
-    public ResponseEntity<List<EmployeeHistoryResponse>> getAllEmployeeHistory() {
+    public ResponseEntity<List<EmployeeHistoryResponse>> getEmployeeHistoryById () {
         List<EmployeeHistoryResponse> employeeHistoryDTOList =
-            service.getAllEmployeeHistory();
+            employeeHistoryService.getAllEmployeeHistory();
 
         return ResponseEntity.ok(employeeHistoryDTOList);
     }
@@ -33,7 +31,7 @@ public class EmployeeHistoryController {
         @PathVariable Long employeeHistoryId
     ) {
         EmployeeHistoryResponse employeeHistoryList =
-            service.getByIdEmployeeHistory(employeeHistoryId);
+            employeeHistoryService.getByIdEmployeeHistory(employeeHistoryId);
 
         return ResponseEntity.ok(employeeHistoryList);
     }

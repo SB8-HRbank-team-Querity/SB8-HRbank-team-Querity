@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.service;
+package com.sprint.mission.sb8hrbankteamquerity.common.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
