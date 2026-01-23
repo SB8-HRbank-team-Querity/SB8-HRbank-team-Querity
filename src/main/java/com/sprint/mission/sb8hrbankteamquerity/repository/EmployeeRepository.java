@@ -31,4 +31,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                                  @Param("status") EmployeeStatus status,
                                  Pageable pageable
     );
+
+    Boolean existsByEmail(String email);
 }
+

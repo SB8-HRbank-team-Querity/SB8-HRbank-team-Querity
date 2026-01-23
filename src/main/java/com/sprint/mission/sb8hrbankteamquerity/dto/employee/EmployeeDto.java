@@ -1,6 +1,5 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.employee;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.fileMeta.FileMetaResponse;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 
 import java.time.Instant;
@@ -10,11 +9,11 @@ public record EmployeeDto(
     String name,
     String email,
     String employeeNumber,
-    int departmentId,
+    Long departmentId,
     String departmentName,
     String position,
     Instant hireDate,
     EmployeeStatus status,
-    int profileImageId
+    Long profileImageId
 ) {
 }
