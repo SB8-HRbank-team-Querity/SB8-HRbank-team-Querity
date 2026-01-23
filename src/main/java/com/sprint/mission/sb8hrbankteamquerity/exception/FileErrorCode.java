@@ -28,6 +28,4 @@ public enum FileErrorCode implements ErrorCode {
     public String getCode() {
         return getDomain() + "-" + getErrorKey();
     }
-
-
-    }
+}
