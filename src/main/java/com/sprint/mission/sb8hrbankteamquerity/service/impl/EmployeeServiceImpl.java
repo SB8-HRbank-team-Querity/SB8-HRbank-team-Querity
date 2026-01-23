@@ -131,5 +131,20 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeMapper.toDto(employee);
     }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직원입니다."));
+
+        //직원이 fk, 먼저 삭제
+        employeeRepository.deleteById(id);
+        employeeRepository.flush();
+
+        if (employee.getProfileImageId() != null) {
+            fileRepository.deleteById(employee.getProfileImageId());
+        }
+    }
 }
 
