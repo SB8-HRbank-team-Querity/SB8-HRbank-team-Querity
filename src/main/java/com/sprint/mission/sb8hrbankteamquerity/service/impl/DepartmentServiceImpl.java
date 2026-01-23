@@ -6,6 +6,8 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentPageRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentUpdateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
+import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.DepartmentMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
@@ -34,7 +36,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // 부서 이름이 중복일 경우
         if (departmentRepository.existsByName(name)) {
-            throw new IllegalArgumentException("Department already exists");
+            throw new BusinessException(DepartmentErrorCode.DUPLICATE_DEPT_NAME);
         }
 
         Department department = new Department(name, description, establishedDate);
@@ -49,7 +51,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // 부서가 존재하지 않을 경우 오류 처리
         Department department = departmentRepository.findById(departmentId)
-            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+            .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
         String newName = departmentUpdateRequest.newName();
         String newDescription = departmentUpdateRequest.newDescription();
@@ -57,7 +59,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // 바꾸려는 부서의 이름이 이미 존재하는 경우 오류 처리
         if (departmentRepository.existsByName(newName)) {
-            throw new IllegalArgumentException("Department already exists");
+            throw new BusinessException(DepartmentErrorCode.DUPLICATE_DEPT_NAME);
         }
 
         department.update(newName, newDescription, newEstablishedDate);
@@ -70,7 +72,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Transactional(readOnly = true)
     public DepartmentDto find(Long departmentId) {
         Department department = departmentRepository.findById(departmentId)
-            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+            .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
         return departmentMapper.toDto(department);
     }
@@ -135,12 +137,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public void delete(Long departmentId) {
         Department department = departmentRepository.findById(departmentId)
-            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+            .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
         // 부서의 직원이 1명 이상일 경우 부서 삭제 불가
         if (!department.getEmployees().isEmpty()) {
-            throw new IllegalStateException(
-                "Department cannot be deleted, because the number of employees is not 0");
+            throw new BusinessException(DepartmentErrorCode.DEPT_NOT_EMPTY);
         }
 
         departmentRepository.delete(department);
