@@ -6,6 +6,7 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
+import com.sprint.mission.sb8hrbankteamquerity.service.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,17 +20,25 @@ import java.util.List;
 public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final EmployeeHistoryMapper employeeHistoryMapper;
-    private final HttpServletRequest httpServletRequest;
 
+
+    /*요청 예시
+    EmployeeHistoryService.saveEmployeeHistory(
+        new EmployeeHistorySaveRequest(
+            EmployeeHistoryType.CREATED, //EmployeeHistoryType 중 하나 하시면 됩니다.
+            "메모내용",
+            "ip 주소 값",
+            mapper.toChangedDetail(EmployeeDto),
+            "직원이름",
+            "사원번호"
+        ));
+        */
     @Override
     public EmployeeHistoryResponse saveEmployeeHistory(EmployeeHistorySaveRequest save) {
-
-        String clientIp = getClientIp();
-
         EmployeeHistory entity = EmployeeHistory.builder()
             .type(save.type())
             .memo(save.memo())
-            .ip_address(clientIp)
+            .ip_address(save.ip())
             .changed_detail(save.changed_detail())
             .employee_name(save.employee_name())
             .employee_number(save.employee_number())
@@ -49,7 +58,6 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         return employeeHistoryResponseList;
     }
 
-
     @Override
     public EmployeeHistoryResponse getByIdEmployeeHistory(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
@@ -57,29 +65,5 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
                 orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
 
         return employeeHistoryMapper.toGetResponse(employeeHistory);
-    }
-
-
-    private String getClientIp() {
-        String[] headerCandidates = {
-            "X-Forwarded-For",
-            "Proxy-Client-IP",
-            "WL-Proxy-Client-IP",
-            "HTTP_X_FORWARDED_FOR",
-            "HTTP_X_FORWARDED",
-            "HTTP_X_CLUSTER_CLIENT_IP",
-            "HTTP_CLIENT_IP",
-            "HTTP_FORWARDED_FOR",
-            "HTTP_FORWARDED",
-            "HTTP_VIA"
-        };
-
-        for (String header : headerCandidates) {
-            String ip = httpServletRequest.getHeader(header);
-            if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-                return ip.split(",")[0].trim();
-            }
-        }
-        return httpServletRequest.getRemoteAddr();
     }
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 public record EmployeeHistorySaveRequest(
     EmployeeHistoryType type,
     String memo,
+    String ip,
     Map<String, Object> changed_detail,
     String employee_name,
     String employee_number
