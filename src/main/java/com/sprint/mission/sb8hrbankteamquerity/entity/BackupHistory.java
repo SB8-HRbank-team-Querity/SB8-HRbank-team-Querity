@@ -1,9 +1,10 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
+import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
@@ -11,19 +12,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @Entity
 @Table(name = "backup_history")
-public class BackupHistory {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private Integer id;
-
-    @CreatedDate
-    @Column(
-        name = "created_at",
-        updatable = false
-    )
-    private Instant createdAt;
+@EntityListeners(AuditingEntityListener.class)
+public class BackupHistory extends BaseEntity {
 
     @Column(
         name = "worker",
@@ -47,7 +37,7 @@ public class BackupHistory {
         length = 50,
         nullable = false
     )
-    private HistoryStatus status;
+    private BackupHistoryStatus status;
 
     //양방향 일대일 관계
     @OneToOne(fetch = FetchType.LAZY)
@@ -57,19 +47,25 @@ public class BackupHistory {
     )
     private FileMeta fileMeta;
 
-    public BackupHistory(String worker, HistoryStatus status, FileMeta fIleMeta) {
+    public BackupHistory(String worker, BackupHistoryStatus status) {
         this.worker = worker;
         this.status = status;
-        //
-        this.fileMeta = fIleMeta;
+        this.startedAt = Instant.now();
     }
 
-    public void update(String newWorker, HistoryStatus newStatus) {
-        if (newWorker != null && !newWorker.equals(this.worker)) {
-            this.worker = newWorker;
-        }
-        if (newStatus != null && !newStatus.equals(this.status)) {
-            this.status = newStatus;
-        }
+    public void complete(FileMeta fileMeta) {
+        this.status = BackupHistoryStatus.COMPLETED;
+        this.endedAt = Instant.now();
+        this.fileMeta = fileMeta;
+    }
+
+    public void fail() {
+        this.status = BackupHistoryStatus.FAILED;
+        this.endedAt = Instant.now();
+    }
+
+    public void skip() {
+        this.status = BackupHistoryStatus.SKIPPED;
+        this.endedAt = Instant.now();
     }
 }
