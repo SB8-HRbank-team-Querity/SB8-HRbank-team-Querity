@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.*;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,9 +43,24 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     private final FileStorageService fileStorageService;
 
     @Override
-    public BackupHistoryDto create() throws UnknownHostException {
-        //IP 주소
-        String workerIp = InetAddress.getLocalHost().getHostAddress();
+    public BackupHistoryDto create(String worker) throws UnknownHostException {
+
+        Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
+
+        // 예외처리 추후 수정 예정
+        if (runningHistory.isPresent()) {
+            throw new IllegalStateException("이미 진행중인 백업이 존재합니다. (ID: " + runningHistory.get().getId() + ")");
+        }
+
+        /*IP 주소
+        * 배치 시스템요청: sytsem
+        * 관리자 요청이면: 관리자IP
+        */
+        String workerIp = worker;
+
+        if (worker == null) {
+            workerIp = InetAddress.getLocalHost().getHostAddress();
+        }
 
         Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
             .orElse(Instant.EPOCH);
@@ -62,17 +78,40 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         //백업이 필요한 경우
         BackupHistory backupHistory = savedinProgressHistory(workerIp);
 
+        Path tempPath = null;
+
         try {
             log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
-            //csv 생성 로직 예정
-            FileMeta fileMeta = generateEmployeeCsvFile(backupHistory);
-            savedCompletedHistory(backupHistory,  fileMeta);
+
+            String originalFileName = "employee_backup_" +  convertFileName(backupHistory) + ".csv";
+            //임시 파일 생성 (OS의 임시 폴더에 생성됨)
+            //메모리에 저장하지 않고 디스크에 넣어서 사용
+            tempPath = Files.createTempFile(originalFileName, ".csv");
+            File tempFile = tempPath.toFile();
+
+            // CSV 쓰기
+            writeCsvToFile(tempFile);
+
+            // 어댑터 생성 및 저장
+            MultipartFile multipartFile = new FileToMultipartFileAdapter(tempFile, originalFileName, "text/csv");
+            FileMeta savedFileMeta = fileStorageService.save(multipartFile);
+
+            savedCompletedHistory(backupHistory,  savedFileMeta);
 
             log.info(">>> 백업 완료");
 
         } catch (Exception e) {
             log.error(">>> 백업 실패", e);
             failureBackupHistory(backupHistory, e);
+        } finally {
+            // 백업 성공 실패 상관 없이 임시 파일 삭제
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException e) {
+                    log.warn("임시 파일 삭제 실패: {}", tempPath, e);
+                }
+            }
         }
 
         return backupHistoryMapper.toDto(backupHistory);
@@ -83,9 +122,12 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         return List.of();
     }
 
+    // 추후 페이지 네이션 구현
     @Override
-    public List<BackupHistoryDto> findLatestByStatus() {
-        return List.of();
+    public List<BackupHistoryDto> findLatestByStatus(BackupHistoryStatus status) {
+        return backupHistoryRepository.findAllByStatusOrderByStartedAtDesc(status).stream()
+            .map(backupHistoryMapper::toDto)
+            .toList();
     }
 
     //스탭 단위로 트랜잭션을 나눔
@@ -119,62 +161,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     protected void failureBackupHistory(BackupHistory backupHistory, Exception e) {
         backupHistory.fail();
         backupHistoryRepository.save(backupHistory);
-    }
-
-    private FileMeta generateEmployeeCsvFile(BackupHistory backupHistory) throws IOException {
-
-        String originalFileName = "employee_backup_" +  convertFileName(backupHistory) + ".csv";
-
-        //임시 파일 생성 (OS의 임시 폴더에 생성됨)
-        Path tempPath = Files.createTempFile(originalFileName, ".csv");
-        File tempFile = tempPath.toFile();
-
-        try (
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
-        ) {
-            writer.write("ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태");
-            writer.newLine();
-
-            //OOM 방지: 페이징으로 끊어서 조회
-            int page = 0;
-            int size = 1000;
-
-            while (true) {
-                Page<Employee> employeePage = employeeRepository.findAllWithDepartment(PageRequest.of(page, size));
-                List<Employee> employees = employeePage.getContent();
-
-                if (employees.isEmpty()) break;
-
-                for (Employee e : employees) {
-                    // 20260123 (년월일) - 시간 제거
-                    LocalDate localDate = e.getHireDate().atZone(ZoneId.systemDefault()).toLocalDate();
-                    String departmentName = e.getDepartmentId() != null ?  e.getDepartmentId().getName() : "";
-
-                    String line = String.format("%d,%s,%s,%s,%s,%s,%s,%s",
-                            e.getId(),
-                            e.getEmployeeNumber(),
-                            e.getName(),
-                            e.getEmail(),
-                            departmentName,
-                            e.getPosition(),
-                            localDate,
-                            e.getStatus()
-                    );
-                    writer.write(line);
-                    writer.newLine();
-                }
-                page++;
-            }
-        }
-
-        MultipartFile multipartFile = new FileToMultipartFileAdapter(tempFile, originalFileName, "text/csv");
-
-        FileMeta savedFileMeta = fileStorageService.save(multipartFile);
-
-        //임시 파일 삭제
-        Files.deleteIfExists(tempPath);
-
-        return savedFileMeta;
     }
 
     private String convertFileName(BackupHistory backupHistory) {
@@ -226,21 +212,65 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         @Override
         public long getSize() { return file.length(); }
 
+        //
         @Override
         public byte[] getBytes() throws IOException {
+            // 이 메서드는 가급적으로 피해하는 것이 좋음. FileStorageService에서 이 메서드를 사용 시 OOM 발생
             return Files.readAllBytes(file.toPath());
         }
 
         // 임시 파일인지 실제 파일인지 확인해서 보내줌
         @Override
         public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(getBytes());
+
+            return new FileInputStream(file);
         }
 
         //Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
         @Override
         public void transferTo(File dest) throws IOException, IllegalStateException {
             Files.copy(file.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+    }
+
+    private void writeCsvToFile(File file) throws IOException {
+        try (
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file))
+        ) {
+            writer.write("ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태");
+            writer.newLine();
+
+            //OOM 방지: 페이징으로 끊어서 조회
+            int page = 0;
+            int size = 1000;
+
+            while (true) {
+                Page<Employee> employeePage = employeeRepository.findAllWithDepartment(PageRequest.of(page, size));
+                List<Employee> employees = employeePage.getContent();
+
+                if (employees.isEmpty()) break;
+
+                for (Employee e : employees) {
+                    // 20260123 (년월일) - 시간 제거
+                    LocalDate localDate = e.getHireDate().atZone(ZoneId.systemDefault()).toLocalDate();
+                    String departmentName = e.getDepartmentId() != null ? e.getDepartmentId().getName() : "";
+
+                    String line = String.format("%d,%s,%s,%s,%s,%s,%s,%s",
+                        e.getId(),
+                        e.getEmployeeNumber(),
+                        e.getName(),
+                        e.getEmail(),
+                        departmentName,
+                        e.getPosition(),
+                        localDate,
+                        e.getStatus()
+                    );
+                    writer.write(line);
+                    writer.newLine();
+                }
+                page++;
+            }
         }
     }
 }
