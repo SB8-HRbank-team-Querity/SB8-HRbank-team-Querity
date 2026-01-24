@@ -2,14 +2,17 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
+import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -42,7 +45,9 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     }
 
     @Override
-    public List<ChangeLogDto> getAllEmployeeHistory() {
+    public List<ChangeLogDto> getAllEmployeeHistory(
+        @RequestParam EmployeeHistoryFilter filter
+        ) {
         List<ChangeLogDto> changeLogDtoList =
             employeeHistoryRepository.findAll().stream().
                 map(employeeHistoryMapper::toGetResponse).toList();
