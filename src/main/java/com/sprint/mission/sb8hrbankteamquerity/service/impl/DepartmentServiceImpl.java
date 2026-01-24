@@ -47,15 +47,15 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public DepartmentDto update(Long departmentId,
-        DepartmentUpdateRequest departmentUpdateRequest) {
+                                DepartmentUpdateRequest departmentUpdateRequest) {
 
         // 부서가 존재하지 않을 경우 오류 처리
         Department department = departmentRepository.findById(departmentId)
             .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
-        String newName = departmentUpdateRequest.name();
-        String newDescription = departmentUpdateRequest.description();
-        Instant newEstablishedDate = departmentUpdateRequest.establishedDate();
+        String newName = departmentUpdateRequest.newName();
+        String newDescription = departmentUpdateRequest.newDescription();
+        Instant newEstablishedDate = departmentUpdateRequest.newEstablishedDate();
 
         // 바꾸려는 부서의 이름이 이미 존재하는 경우 오류 처리
         if (!department.getName().equals(newName) && departmentRepository.existsByName(newName)) {
@@ -107,10 +107,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         List<Department> departments = departmentRepository.findAllByCursor(
             departmentPageRequest.nameOrDescription() == null ? "" : departmentPageRequest.nameOrDescription(),
-            lastValue,
-            lastDateValue,
             departmentPageRequest.idAfter(),
-            sortField,
             isAsc,
             pageable
         );

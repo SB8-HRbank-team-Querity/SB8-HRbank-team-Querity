@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,18 +27,18 @@ public class Department extends BaseUpdatableEntity {
     private String description;
 
     @Column(name = "established_date", nullable = false)
-    private Date establishedDate;
+    private Instant establishedDate;
 
     @OneToMany(mappedBy = "departmentId")
     private List<Employee> employees = new ArrayList<>();
 
-    public Department(String name, String description, Date establishedDate) {
+    public Department(String name, String description, Instant establishedDate) {
         this.name = name;
         this.description = description;
         this.establishedDate = establishedDate;
     }
 
-    public void update(String newName, String newDescription, Date newEstablishedDate) {
+    public void update(String newName, String newDescription, Instant newEstablishedDate) {
         if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
         }
