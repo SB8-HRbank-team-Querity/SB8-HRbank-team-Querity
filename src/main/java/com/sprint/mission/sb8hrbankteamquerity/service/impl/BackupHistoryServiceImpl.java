@@ -57,6 +57,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     private static final String LOG_TITLE = "[Backup Failure Log]";
     private static final String LOG_REASON_IN_PROGRESS = "Reason: ALREADY_IN_PROGRESS";
+    private static final String LOG_REASON_BAD_REQUEST = "Reason: BAD_REQUEST";
     private static final String LOG_TIME = "Time: ";
     private static final String LOG_REQUESTER = "Requester: ";
     private static final String LOG_SEPERATOR = "--------------------------------------------------";
@@ -71,23 +72,19 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     @Override
     public BackupHistoryDto create(String worker) {
 
-        Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
-
-        if (runningHistory.isPresent()) {
-            BackupHistory backupHistory = runningHistory.get();
-            writeFailureLogToFile(backupHistory, worker);
-
-            throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
-        }
-
         /*IP 주소
          * 배치 시스템요청: sytsem
          * 관리자 요청이면: 관리자IP
          */
-        String workerIp = worker;
+        String workerIp = worker == null ? ipUtil.getClientIp() : worker;
 
-        if (worker == null) {
-            workerIp = ipUtil.getClientIp();
+        Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
+
+        if (runningHistory.isPresent()) {
+            BackupHistory backupHistory = runningHistory.get();
+            writeFailureLogToFile(backupHistory, LOG_REASON_IN_PROGRESS, workerIp);
+
+            throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
         }
 
         Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
@@ -95,19 +92,17 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         boolean needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt);
 
-        // 백업이 불필요한 경우
-        if (!needBackup) {
-            BackupHistory backupHistory = savedinProgressHistory(workerIp);
-            String fileName = CSV_HEAD_NAME + "_" +  convertFileName(backupHistory) + CSV_CONTENT_TYPE;
-
-            return savedSkippedHisotry(workerIp);
-        }
-
-        //백업이 필요한 경우
+        //백업이 필요한 경우와 불필요한 경우 진행중인 상태는 유지되어야 함
+        //추후 상태 변경
         BackupHistory backupHistory = savedinProgressHistory(workerIp);
 
-        Path tempPath = null;
+        // 백업이 불필요한 경우
+        if (!needBackup) {
+            return updatedSkippedHistory(backupHistory);
+        }
 
+        // 백업이 필요한 경우
+        Path tempPath = null;
         try {
             log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
             String originalFileName = CSV_HEAD_NAME + "_" + convertFileName(backupHistory);
@@ -120,18 +115,17 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             // CSV 쓰기
             writeCsvToFile(tempFile);
 
-            // 어댑터 생성 및 저장
             FileMeta savedFileMeta = fileStorageService.save(tempFile, originalFileName, "text/csv");
 
-            savedCompletedHistory(backupHistory, savedFileMeta);
+            updatedCompletedHistory(backupHistory, savedFileMeta);
 
             log.info(">>> 백업 완료");
 
         } catch (Exception e) {
             log.error(">>> 백업 실패", e);
 
-            failureBackupHistory(backupHistory, e);
-            writeFailureLogToFile(backupHistory, worker);
+            FileMeta errorLogFilefileMeta = writeFailureLogToFile(backupHistory, LOG_REASON_BAD_REQUEST, workerIp);
+            updatedFailureHistory(backupHistory, errorLogFilefileMeta);
         } finally {
             // 백업 성공 실패 상관 없이 임시 파일 삭제
             if (tempPath != null) {
@@ -162,8 +156,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     //백업 스킵
     @Transactional
-    protected BackupHistoryDto savedSkippedHisotry(String workerIp) {
-        BackupHistory backupHistory = new BackupHistory(workerIp, BackupHistoryStatus.SKIPPED);
+    protected BackupHistoryDto updatedSkippedHistory(BackupHistory backupHistory) {
         backupHistory.skip();
         return backupHistoryMapper.toDto(backupHistoryRepository.save(backupHistory));
     }
@@ -179,15 +172,18 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     //백업 성공
     @Transactional
-    protected void savedCompletedHistory(BackupHistory backupHistory, FileMeta fileMeta) {
+    protected void updatedCompletedHistory(BackupHistory backupHistory, FileMeta fileMeta) {
         backupHistory.complete(fileMeta);
         backupHistoryRepository.save(backupHistory);
     }
 
     //백업 실패
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void failureBackupHistory(BackupHistory backupHistory, Exception e) {
+    protected void updatedFailureHistory(BackupHistory backupHistory, FileMeta fileMeta) {
         backupHistory.fail();
+        if (fileMeta != null) {
+            backupHistory.updateFile(fileMeta);
+        }
         backupHistoryRepository.save(backupHistory);
     }
 
@@ -242,12 +238,19 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         }
     }
 
-    private void writeFailureLogToFile(BackupHistory backupHistory, String requester) {
+    private FileMeta writeFailureLogToFile(BackupHistory backupHistory, String reason, String requester) {
 
         Path tempPath = null;
+        FileMeta savedFileMeta = null;
 
         try {
             String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT));
+            String startedAt = LocalDateTime.ofInstant(backupHistory.getStartedAt(), ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern(DATE_FORMAT));
+
+            long id = backupHistory.getId();
+            BackupHistoryStatus status = backupHistory.getStatus();
+
             String fileName = timeStamp + LOG_CONTENT_TYPE;
 
             tempPath = Files.createTempFile(fileName, LOG_CONTENT_TYPE);
@@ -258,9 +261,9 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             ) {
                 writer.write(LOG_TITLE);
                 writer.newLine();
-                writer.write(LOG_REASON_IN_PROGRESS);
+                writer.write(reason);
                 writer.newLine();
-                writer.write(LOG_TIME + LocalDateTime.now());
+                writer.write(LOG_TIME + timeStamp);
                 writer.newLine();
                 writer.write(LOG_REQUESTER + requester);
                 writer.newLine();
@@ -268,14 +271,14 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 writer.newLine();
                 writer.write(LOG_INFO);
                 writer.newLine();
-                writer.write(LOG_ID + backupHistory.getId());
+                writer.write(LOG_ID + id);
                 writer.newLine();
-                writer.write(LOG_START_TIME + backupHistory.getStartedAt());
+                writer.write(LOG_START_TIME + startedAt);
                 writer.newLine();
-                writer.write(LOG_STATUS + backupHistory.getStatus());
+                writer.write(LOG_STATUS + status);
             }
 
-            fileStorageService.save(tempFile, fileName, "text/plain");
+            savedFileMeta = fileStorageService.save(tempFile, fileName, "text/plain");
 
             log.info("에러 로그 파일 저장 완료");
         } catch (Exception e) {
@@ -290,5 +293,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 }
             }
         }
+
+        return savedFileMeta;
     }
 }
