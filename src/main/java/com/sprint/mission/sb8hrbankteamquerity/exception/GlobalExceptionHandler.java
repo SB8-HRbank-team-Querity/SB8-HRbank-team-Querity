@@ -2,12 +2,15 @@ package com.sprint.mission.sb8hrbankteamquerity.exception;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
@@ -45,7 +48,7 @@ public class GlobalExceptionHandler {
                 error.getRejectedValue()
             ))
             .toList();
-        
+
         log.error("유효성 검사 실패 : code={}, message={}, path={}, details={}", code.getCode(), code.getMessage(), request.getRequestURI(), details);
 
         ErrorResponse response = ErrorResponse.of(code, code.getMessage(), request.getRequestURI(), details);
@@ -53,4 +56,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(code.getHttpStatus()).body(response);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+
+        ErrorCode code = GlobalErrorCode.INVALID_INPUT;
+
+        String detailsMessage;
+        if (e.getRequiredType() != null && e.getRequiredType().isEnum()) {
+            String allowedValues = Arrays.toString(e.getRequiredType().getEnumConstants());
+            detailsMessage = String.format("'%s' 파라미터 값이 올바르지 않습니다. (허용된 값: %s)", e.getName(), allowedValues);
+        } else {
+            detailsMessage = String.format("'%s' 파라미터의 형식이 올바르지 않습니다.", e.getName());
+        }
+
+        // details 필드에 넣기 위해 리스트로 변환
+        List<ErrorResponse.Detail> details = List.of(new ErrorResponse.Detail(e.getName(), detailsMessage, e.getValue()));
+
+        ErrorResponse response = ErrorResponse.of(code, "잘못된 요청입니다.", request.getRequestURI(), details);
+
+        return ResponseEntity.status(code.getHttpStatus()).body(response);
+    }
 }

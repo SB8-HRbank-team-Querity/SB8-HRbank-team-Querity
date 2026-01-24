@@ -133,7 +133,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         return List.of();
     }
 
-    // 추후 페이지 네이션 구현
     @Override
     public BackupHistoryDto findLatestByStatus(BackupHistoryStatus status) {
         return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(status)
