@@ -18,15 +18,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,14 +53,14 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
 
         // 예외처리 추후 수정 예정
-        if (runningHistory.isPresent()) {
-            throw new IllegalStateException("이미 진행중인 백업이 존재합니다. (ID: " + runningHistory.get().getId() + ")");
-        }
+//        if (runningHistory.isPresent()) {
+//            throw new IllegalStateException("이미 진행중인 백업이 존재합니다. (ID: " + runningHistory.get().getId() + ")");
+//        }
 
         /*IP 주소
-        * 배치 시스템요청: sytsem
-        * 관리자 요청이면: 관리자IP
-        */
+         * 배치 시스템요청: sytsem
+         * 관리자 요청이면: 관리자IP
+         */
         String workerIp = worker;
 
         if (worker == null) {
@@ -82,21 +87,26 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         try {
             log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
+            System.out.println("dd: " + convertFileName(backupHistory));
 
-            String originalFileName = "employee_backup_" +  convertFileName(backupHistory) + ".csv";
+            String originalFileName = "employee_backup_" + convertFileName(backupHistory);
+
+//            String originalFileName = "employee_backup_";
+
             //임시 파일 생성 (OS의 임시 폴더에 생성됨)
             //메모리에 저장하지 않고 디스크에 넣어서 사용
             tempPath = Files.createTempFile(originalFileName, ".csv");
             File tempFile = tempPath.toFile();
 
+            System.out.println(tempFile.getName());
+
             // CSV 쓰기
             writeCsvToFile(tempFile);
 
             // 어댑터 생성 및 저장
-            MultipartFile multipartFile = new FileToMultipartFileAdapter(tempFile, originalFileName, "text/csv");
-            FileMeta savedFileMeta = fileStorageService.save(multipartFile);
+            FileMeta savedFileMeta = fileStorageService.save(tempFile, originalFileName, "text/csv");
 
-            savedCompletedHistory(backupHistory,  savedFileMeta);
+            savedCompletedHistory(backupHistory, savedFileMeta);
 
             log.info(">>> 백업 완료");
 
@@ -169,69 +179,9 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         // ZoneId.systemDefault - 한국 시간
         LocalDateTime ldt = LocalDateTime.ofInstant(backupHistory.getStartedAt(), ZoneId.systemDefault());
 
-        LocalDate date = ldt.toLocalDate();
-        LocalTime time = ldt.toLocalTime();
-        // 년월일 - 20260123
-        String formattedDate = date.toString().replace("-", "");
-        // 시간에서 초까지만
-        String formattedTime = time.toString().replace(":", "").substring(0, 6);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-        return backupHistory.getId() + formattedDate + "_" +  formattedTime;
-    }
-
-    // FileStorageService를 수정하지 않기 위한 어뎁터 클래스
-    // java.io.File 객체를 스프링의 MultipartFile 인터페이스로 감쌈.
-    // MultipartFile은 인터페이스이기 때문에 @Override 꼭 필수!!!!!!!!!!!!!!!!!!!!!!
-    private static class FileToMultipartFileAdapter implements MultipartFile {
-        // 실제 디스크에 저장된 임시 파일
-        private final File file;
-        // 가짜 파일명
-        private final String fileName;
-        // 파일 타입 (text/csv)
-        private final String contentType;
-
-        public FileToMultipartFileAdapter(File file, String fileName, String contentType) {
-            this.file = file;
-            this.fileName = fileName;
-            this.contentType = contentType;
-        }
-
-        @Override
-        public String getName() { return "file"; }
-
-        //EX) employee_backup_....csv
-        @Override
-        public String getOriginalFilename() {return this.fileName; }
-
-        @Override
-        public String getContentType() { return this.contentType; }
-
-        @Override
-        public boolean isEmpty() { return file.length() == 0; }
-
-        @Override
-        public long getSize() { return file.length(); }
-
-        //
-        @Override
-        public byte[] getBytes() throws IOException {
-            // 이 메서드는 가급적으로 피해하는 것이 좋음. FileStorageService에서 이 메서드를 사용 시 OOM 발생
-            return Files.readAllBytes(file.toPath());
-        }
-
-        // 임시 파일인지 실제 파일인지 확인해서 보내줌
-        @Override
-        public InputStream getInputStream() throws IOException {
-
-            return new FileInputStream(file);
-        }
-
-        //Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        @Override
-        public void transferTo(File dest) throws IOException, IllegalStateException {
-            Files.copy(file.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-
+        return backupHistory.getId() + "_" + ldt.format(formatter);
     }
 
     private void writeCsvToFile(File file) throws IOException {

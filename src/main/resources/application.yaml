@@ -49,4 +49,4 @@ server:
 
 backup:
     scheduler:
-        interval: 60000 # 1시간, ms 기준, 시간은 테스트 중이므로 변동 사항있음
+        interval: 30000 # 1시간, ms 기준, 시간은 테스트 중이므로 변동 사항있음

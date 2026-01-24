@@ -63,8 +63,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     @Transactional
-    public FileMeta save(File file, String contentType) throws IOException {
-        String originName = StringUtils.cleanPath(file.getName());
+    public FileMeta save(File file, String fileName, String contentType) throws IOException {
+        String originName = StringUtils.cleanPath(fileName);
 
         try (InputStream inputStream = new FileInputStream(file)) {
             return saveInternal(inputStream, originName, contentType, file.length());
