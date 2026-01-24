@@ -165,9 +165,11 @@ VALUES ('Admin_Sys', NOW() - INTERVAL '2 days', NOW() - INTERVAL '115 minutes', 
        ('Admin_Dev', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '235 minutes', 'COMPLETED', NOW(), NULL),
        ('Admin_Sys', NOW() - INTERVAL '2 hours', NULL, 'COMPLETED', NOW(), NULL),
        ('Scheduler', NOW() - INTERVAL '1 hour', NULL, 'COMPLETED', NOW(), NULL),
-       ('Admin_Sys', NOW(), NULL, 'COMPLETED', NOW(), NULL);
+       ('Admin_Sys', NOW(), NULL, 'COMPLETED', NOW(), NULL),
+       ('Admin_Sys', NOW(), NULL, 'IN_PROGRESS', NOW(), NULL);
 
 SELECT *
+
 FROM employee;
 SELECT *
 FROM department;

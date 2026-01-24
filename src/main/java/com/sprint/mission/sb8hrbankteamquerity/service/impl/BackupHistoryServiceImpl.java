@@ -52,8 +52,21 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     private final IpUtil ipUtil;
 
     private static final String CSV_HEADER = "ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태";
-    private static final String CSV_HEADNAME = "employee_backup";
-    private static final String CSV_CONTENTTYPE = ".csv";
+    private static final String CSV_HEAD_NAME = "employee_backup";
+    private static final String CSV_CONTENT_TYPE = ".csv";
+
+    private static final String LOG_TITLE = "[Backup Failure Log]";
+    private static final String LOG_REASON_IN_PROGRESS = "Reason: ALREADY_IN_PROGRESS";
+    private static final String LOG_TIME = "Time: ";
+    private static final String LOG_REQUESTER = "Requester: ";
+    private static final String LOG_SEPERATOR = "--------------------------------------------------";
+    private static final String LOG_INFO = "[Blocking Backup Info]";
+    private static final String LOG_ID = "ID: ";
+    private static final String LOG_START_TIME = "Started At: ";
+    private static final String LOG_STATUS = "Status: ";
+    private static final String LOG_CONTENT_TYPE = ".log";
+
+    private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
     @Override
     public BackupHistoryDto create(String worker) {
@@ -61,6 +74,9 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
 
         if (runningHistory.isPresent()) {
+            BackupHistory backupHistory = runningHistory.get();
+            writeFailureLogToFile(backupHistory, worker);
+
             throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
         }
 
@@ -72,7 +88,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         if (worker == null) {
             workerIp = ipUtil.getClientIp();
-            System.out.println(workerIp);
         }
 
         Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
@@ -80,13 +95,13 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         boolean needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt);
 
-        //백업이 불필요한 경우
-//        if (!needBackup) {
-//            BackupHistory backupHistory = savedinProgressHistory(workerIp);
-//            String fileName = "employee_backup_" +  convertFileName(backupHistory) + ".csv";
-//            System.out.println("fileName = " + fileName);
-//            return savedSkippedHisotry(workerIp);
-//        }
+        // 백업이 불필요한 경우
+        if (!needBackup) {
+            BackupHistory backupHistory = savedinProgressHistory(workerIp);
+            String fileName = CSV_HEAD_NAME + "_" +  convertFileName(backupHistory) + CSV_CONTENT_TYPE;
+
+            return savedSkippedHisotry(workerIp);
+        }
 
         //백업이 필요한 경우
         BackupHistory backupHistory = savedinProgressHistory(workerIp);
@@ -95,14 +110,12 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         try {
             log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
-            String originalFileName = CSV_HEADNAME + "_" + convertFileName(backupHistory);
+            String originalFileName = CSV_HEAD_NAME + "_" + convertFileName(backupHistory);
 
             //임시 파일 생성 (OS의 임시 폴더에 생성됨)
             //메모리에 저장하지 않고 디스크에 넣어서 사용
-            tempPath = Files.createTempFile(originalFileName, CSV_CONTENTTYPE);
+            tempPath = Files.createTempFile(originalFileName, CSV_CONTENT_TYPE);
             File tempFile = tempPath.toFile();
-
-            System.out.println(tempFile.getName());
 
             // CSV 쓰기
             writeCsvToFile(tempFile);
@@ -116,7 +129,9 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         } catch (Exception e) {
             log.error(">>> 백업 실패", e);
+
             failureBackupHistory(backupHistory, e);
+            writeFailureLogToFile(backupHistory, worker);
         } finally {
             // 백업 성공 실패 상관 없이 임시 파일 삭제
             if (tempPath != null) {
@@ -182,7 +197,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         // ZoneId.systemDefault - 한국 시간
         LocalDateTime ldt = LocalDateTime.ofInstant(backupHistory.getStartedAt(), ZoneId.systemDefault());
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
         return backupHistory.getId() + "_" + ldt.format(formatter);
     }
@@ -223,6 +238,56 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                     writer.newLine();
                 }
                 page++;
+            }
+        }
+    }
+
+    private void writeFailureLogToFile(BackupHistory backupHistory, String requester) {
+
+        Path tempPath = null;
+
+        try {
+            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT));
+            String fileName = timeStamp + LOG_CONTENT_TYPE;
+
+            tempPath = Files.createTempFile(fileName, LOG_CONTENT_TYPE);
+            File tempFile = tempPath.toFile();
+
+            try (
+                BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
+            ) {
+                writer.write(LOG_TITLE);
+                writer.newLine();
+                writer.write(LOG_REASON_IN_PROGRESS);
+                writer.newLine();
+                writer.write(LOG_TIME + LocalDateTime.now());
+                writer.newLine();
+                writer.write(LOG_REQUESTER + requester);
+                writer.newLine();
+                writer.write(LOG_SEPERATOR);
+                writer.newLine();
+                writer.write(LOG_INFO);
+                writer.newLine();
+                writer.write(LOG_ID + backupHistory.getId());
+                writer.newLine();
+                writer.write(LOG_START_TIME + backupHistory.getStartedAt());
+                writer.newLine();
+                writer.write(LOG_STATUS + backupHistory.getStatus());
+            }
+
+            fileStorageService.save(tempFile, fileName, "text/plain");
+
+            log.info("에러 로그 파일 저장 완료");
+        } catch (Exception e) {
+            log.warn("에러 로그 파일 생성 중 실패", e);
+        } finally {
+            // 에러 로그가 성공 여부와 상관없이 임시 파일 삭제
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException e) {
+                    log.warn("임시 파일 삭제 실패: {}", tempPath, e);
+                }
             }
         }
     }
