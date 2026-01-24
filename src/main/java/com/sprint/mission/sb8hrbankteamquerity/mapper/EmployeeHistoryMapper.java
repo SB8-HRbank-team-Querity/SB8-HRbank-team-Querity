@@ -38,25 +38,25 @@ public interface EmployeeHistoryMapper {
     default Map<String, DiffDto> toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto) {
         Map<String, DiffDto> diffDto = new HashMap<>();
 
-        compareAndAdd(diffDto,"hireDate",oldDto.hireDate(),newDto.hireDate());
-        compareAndAdd(diffDto,"name",oldDto.name(),newDto.name());
-        compareAndAdd(diffDto,"position",oldDto.position(),newDto.position());
-        compareAndAdd(diffDto,"departmentName",oldDto.departmentName(),newDto.departmentName());
-        compareAndAdd(diffDto,"email",oldDto.email(),newDto.email());
-        compareAndAdd(diffDto,"employeeNumber",oldDto.employeeNumber(),newDto.employeeNumber());
-        compareAndAdd(diffDto,"status",oldDto.status(),newDto.status());
+        compareAndAdd(diffDto, "hireDate", oldDto.hireDate(), newDto.hireDate());
+        compareAndAdd(diffDto, "name", oldDto.name(), newDto.name());
+        compareAndAdd(diffDto, "position", oldDto.position(), newDto.position());
+        compareAndAdd(diffDto, "departmentName", oldDto.departmentName(), newDto.departmentName());
+        compareAndAdd(diffDto, "email", oldDto.email(), newDto.email());
+        compareAndAdd(diffDto, "employeeNumber", oldDto.employeeNumber(), newDto.employeeNumber());
+        compareAndAdd(diffDto, "status", oldDto.status(), newDto.status());
 
         return diffDto;
     }
 
     private void compareAndAdd(Map<String, DiffDto> diffDto, String key, Object oldValue, Object newValue) {
 
-        if (oldValue == null && newValue == null) return;
+        if (newValue == null) return;
         if (oldValue != null && oldValue.equals(newValue)) return;
 
-        if (!newValue.equals(oldValue)) {
-            DiffDto Dto = new DiffDto(key,oldValue.toString(),newValue.toString());
-            diffDto.put(key,Dto);
-        }
+        String oldStr = (oldValue != null) ? String.valueOf(oldValue) : null;
+        String newStr = (newValue != null) ? String.valueOf(newValue) : null;
+
+        diffDto.put(key, new DiffDto(key, oldStr, newStr));
     }
 }

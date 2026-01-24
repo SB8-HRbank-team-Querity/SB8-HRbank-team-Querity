@@ -35,6 +35,6 @@ public class EmployeeHistory extends BaseEntity {
     @Column(name = "employee_name", nullable = false, length = 50)
     private String employeeName;
 
-    @Column(name = "employee_number", columnDefinition = "jsonb", nullable = false, length = 50)
+    @Column(name = "employee_number", nullable = false, length = 50)
     private String employeeNumber;
 }
