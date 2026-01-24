@@ -4,6 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 @Component
 @RequiredArgsConstructor
 public class IpUtil {
@@ -30,6 +33,30 @@ public class IpUtil {
                 return ip.split(",")[0].trim();
             }
         }
-        return request.getRemoteAddr();
+//        return request.getRemoteAddr();  // IPv6
+
+        return normalizeIpv4(request.getRemoteAddr());  // IPv4
+    }
+
+    // IPv6 -> IPv4
+    private String normalizeIpv4(String ip) {
+        try {
+            InetAddress address = InetAddress.getByName(ip);
+
+            if (address.isLoopbackAddress()) {
+                return "127.0.0.1";
+            }
+
+            byte[] bytes = address.getAddress();
+            if (bytes.length == 16) {
+                return InetAddress.getByAddress(
+                    new byte[] { bytes[12], bytes[13], bytes[14], bytes[15] }
+                ).getHostAddress();
+            }
+
+            return address.getHostAddress();
+        } catch (UnknownHostException e) {
+            return ip;
+        }
     }
 }
