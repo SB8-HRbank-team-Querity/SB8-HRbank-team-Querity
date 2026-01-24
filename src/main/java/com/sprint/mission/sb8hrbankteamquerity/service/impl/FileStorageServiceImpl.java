@@ -64,9 +64,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     @Transactional
     public FileMeta save(File file, String contentType) throws IOException {
-        // 파일명 정리 (../ 같은 경로 조작 문자 제거)
-        String originName = StringUtils.cleanPath(
-            Objects.requireNonNull(file.getName()));
+        String originName = StringUtils.cleanPath(file.getName());
         
         try (InputStream inputStream = new FileInputStream(file)) {
             return saveInternal(inputStream, originName, contentType, file.length());
@@ -89,15 +87,25 @@ public class FileStorageServiceImpl implements FileStorageService {
         // 파일 저장 (원래 있던 파일은 덮어쓰기)
         Files.copy(inputStream, targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-        // 메타 정보 DB 저장
-        FileMeta fileMeta = FileMeta.builder()
-            .originName(originName)
-            .path(targetLocation.toString())
-            .type(contentType)
-            .size(size)
-            .build();
+        try {
+            // 메타 정보 DB 저장
+            FileMeta fileMeta = FileMeta.builder()
+                .originName(originName)
+                .path(targetLocation.toString())
+                .type(contentType)
+                .size(size)
+                .build();
 
-        return fileRepository.save(fileMeta);
+            return fileRepository.save(fileMeta);
+        } catch (Exception e) {
+            // DB 저장 실패 시 파일 삭제 (롤백)
+            try {
+                Files.deleteIfExists(targetLocation);
+            } catch (IOException deleteEx) {
+                log.error("파일 삭제 실패 (롤백 중): {}", targetLocation, deleteEx);
+            }
+            throw e;
+        }
     }
 
     @Override
