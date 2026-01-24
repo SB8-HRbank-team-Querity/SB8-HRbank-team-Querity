@@ -44,3 +44,8 @@ logging:
  # 3. server config
 server:
   port: 8080
+
+# 디스코드 설정
+discord:
+  webhook:
+    url: "https://discord.com/api/webhooks/1464525247683498068/ynJQTs8MLY-_eKYjTgpqtkArQzUTSgBxDpoObNak2AWSqLaK9WBNbuAy6vsapulYDCv5"
