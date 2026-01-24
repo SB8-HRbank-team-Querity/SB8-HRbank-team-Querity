@@ -4,6 +4,7 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
+import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
@@ -41,7 +42,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         //페이지네이션
         int size = (Dto.size() != null && Dto.size() > 0) ? Dto.size() : 10;
-        Long idAfter = Dto.idAfter() == null ? 0 : Dto.idAfter();
+
+
+        Long idAfter = 0L;
+        if (Dto.cursor() != null && !Dto.cursor().isEmpty()) {
+            try {
+                String decode = new String(Base64.getDecoder().decode(Dto.cursor()));
+                idAfter = Long.parseLong(decode);
+            } catch (Exception e) { // 잘못된 커서 값일 경우 처음부터 조회
+                idAfter = 0L;
+            }
+        } else if (Dto.idAfter() != null) {
+            idAfter = Dto.idAfter();
+        }
 
         // 정렬
         String sortField = Dto.sortField() == null ? "name" : Dto.sortField();
@@ -89,8 +102,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new BusinessException(EmployeeErrorCode.EMP_DUPLICATE_EMAIL);
         }
         Department department = departmentRepository.findById(request.departmentId())
-            //부서를 찾을 수 없는 예외로 임시로 적은 것이고 부서 예외처리가 완성되면 수정할 예정입니다.
-            .orElseThrow(() -> new BusinessException(DEPTErrorCode.DEPT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
         Employee employee;
         if (id == null) {
@@ -118,8 +130,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new BusinessException(EmployeeErrorCode.EMP_DUPLICATE_EMAIL);
         }
         Department department = departmentRepository.findById(request.departmentId())
-            //부서를 찾을 수 없는 예외로 임시로 적은 것이고 부서 예외처리가 완성되면 수정할 예정입니다.
-            .orElseThrow(() -> new BusinessException(DEPTErrorCode.DEPT_NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
         employee.update(request.name(), request.email(), department, request.position(), request.hireDate(), request.status(), profileId);
         employeeRepository.saveAndFlush(employee);
