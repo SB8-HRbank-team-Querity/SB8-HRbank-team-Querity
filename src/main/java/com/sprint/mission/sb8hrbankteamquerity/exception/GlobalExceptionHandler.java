@@ -16,6 +16,11 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String INCORRECT_PARAMETER = "'%s' 파라미터 값이 올바르지 않습니다. (허용된 값: %s)";
+    private static final String INVALID_PARAMETER_FORMAT = "'%s' 파라미터의 형식이 올바르지 않습니다.";
+    private static final String INVALID_REQUEST = "잘못된 접근입니다.";
+
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
 
@@ -64,15 +69,15 @@ public class GlobalExceptionHandler {
         String detailsMessage;
         if (e.getRequiredType() != null && e.getRequiredType().isEnum()) {
             String allowedValues = Arrays.toString(e.getRequiredType().getEnumConstants());
-            detailsMessage = String.format("'%s' 파라미터 값이 올바르지 않습니다. (허용된 값: %s)", e.getName(), allowedValues);
+            detailsMessage = String.format(INCORRECT_PARAMETER, e.getName(), allowedValues);
         } else {
-            detailsMessage = String.format("'%s' 파라미터의 형식이 올바르지 않습니다.", e.getName());
+            detailsMessage = String.format(INVALID_PARAMETER_FORMAT, e.getName());
         }
 
         // details 필드에 넣기 위해 리스트로 변환
         List<ErrorResponse.Detail> details = List.of(new ErrorResponse.Detail(e.getName(), detailsMessage, e.getValue()));
 
-        ErrorResponse response = ErrorResponse.of(code, "잘못된 요청입니다.", request.getRequestURI(), details);
+        ErrorResponse response = ErrorResponse.of(code, INVALID_REQUEST, request.getRequestURI(), details);
 
         return ResponseEntity.status(code.getHttpStatus()).body(response);
     }

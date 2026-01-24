@@ -6,6 +6,8 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BackupHistoryErrorCode;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.BackupHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.BackupHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
@@ -44,7 +46,9 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     private final EmployeeRepository employeeRepository;
 
     private final BackupHistoryMapper backupHistoryMapper;
+
     private final FileStorageService fileStorageService;
+
     private final IpUtil ipUtil;
 
     private static final String CSV_HEADER = "ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태";
@@ -56,9 +60,8 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
 
-        // 예외처리 추후 수정 예정
         if (runningHistory.isPresent()) {
-            throw new IllegalStateException("이미 진행중인 백업이 존재합니다. (ID: " + runningHistory.get().getId() + ")");
+            throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
         }
 
         /*IP 주소
