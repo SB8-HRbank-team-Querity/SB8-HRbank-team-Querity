@@ -1,8 +1,10 @@
 package com.sprint.mission.sb8hrbankteamquerity.exception;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
+import com.sprint.mission.sb8hrbankteamquerity.service.DiscordWebhookService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,7 +13,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final DiscordWebhookService discordWebhookService;
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
@@ -20,6 +25,11 @@ public class GlobalExceptionHandler {
 
         // 서버 로그 남기기
         log.error("비즈니스 예외 발생 : code={}, message={}, path={}", code.getCode(), code.getMessage(), request.getRequestURI());
+
+        // 500 에러일 때 웹훅 발송
+        if (code.getHttpStatus().is5xxServerError()) {
+            discordWebhookService.sendAlert(code, e.getMessage(), request.getRequestURI());
+        }
 
         // 응답 생성
         ErrorResponse response;
