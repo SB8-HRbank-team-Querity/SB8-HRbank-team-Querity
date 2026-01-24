@@ -11,7 +11,7 @@ import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.DepartmentMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +32,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentDto create(DepartmentCreateRequest departmentCreateRequest) {
         String name = departmentCreateRequest.name();
         String description = departmentCreateRequest.description();
-        Date establishedDate = departmentCreateRequest.establishedDate();
+        Instant establishedDate = departmentCreateRequest.establishedDate();
 
         // 부서 이름이 중복일 경우
         if (departmentRepository.existsByName(name)) {
@@ -53,17 +53,16 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = departmentRepository.findById(departmentId)
             .orElseThrow(() -> new BusinessException(DepartmentErrorCode.DEPT_NOT_FOUND));
 
-        String newName = departmentUpdateRequest.newName();
-        String newDescription = departmentUpdateRequest.newDescription();
-        Date newEstablishedDate = departmentUpdateRequest.newEstablishedDate();
+        String newName = departmentUpdateRequest.name();
+        String newDescription = departmentUpdateRequest.description();
+        Instant newEstablishedDate = departmentUpdateRequest.establishedDate();
 
         // 바꾸려는 부서의 이름이 이미 존재하는 경우 오류 처리
-        if (departmentRepository.existsByName(newName)) {
+        if (!department.getName().equals(newName) && departmentRepository.existsByName(newName)) {
             throw new BusinessException(DepartmentErrorCode.DUPLICATE_DEPT_NAME);
         }
 
         department.update(newName, newDescription, newEstablishedDate);
-        departmentRepository.save(department);
 
         return departmentMapper.toDto(department);
     }
@@ -85,20 +84,34 @@ public class DepartmentServiceImpl implements DepartmentService {
             ? departmentPageRequest.size() : 10;
         String sortField = departmentPageRequest.sortField() == null ? "establishedDate"
             : departmentPageRequest.sortField();
-        Sort.Direction direction =
-            "desc".equalsIgnoreCase(departmentPageRequest.sortDirection()) ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
+        boolean isAsc = !"desc".equalsIgnoreCase(departmentPageRequest.sortDirection());
+
+        String lastValue = null;
+        Instant lastDateValue = null;
+        if (departmentPageRequest.idAfter() != null) {
+            Department lastDept = departmentRepository.findById(departmentPageRequest.idAfter()).orElse(null);
+            if (lastDept != null) {
+                if ("name".equals(sortField)) {
+                    lastValue = lastDept.getName();
+                } else {
+                    lastDateValue = lastDept.getEstablishedDate();
+                }
+            }
+        }
 
         // 정렬값이 같을 경우 id 오름차순 정렬
-        Sort sort = Sort.by(direction, sortField).and(Sort.by(Sort.Direction.ASC, "id"));
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortField).and(Sort.by(direction, "id"));
 
         Pageable pageable = PageRequest.of(0, size + 1, sort);
 
-        boolean isAcs = direction.isAscending();
         List<Department> departments = departmentRepository.findAllByCursor(
-            departmentPageRequest.nameOrDescription(),
+            departmentPageRequest.nameOrDescription() == null ? "" : departmentPageRequest.nameOrDescription(),
+            lastValue,
+            lastDateValue,
             departmentPageRequest.idAfter(),
-            isAcs,
+            sortField,
+            isAsc,
             pageable
         );
 
