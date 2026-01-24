@@ -6,6 +6,17 @@ import com.sprint.mission.sb8hrbankteamquerity.exception.FileErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,15 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Objects;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -53,12 +55,25 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     @Transactional
     public FileMeta save(MultipartFile file) throws IOException {
-
-        // 파일명 정리 (../ 같은 경로 조작 문자 제거)
         String originName = StringUtils.cleanPath(
             Objects.requireNonNull(file.getOriginalFilename()));
 
-        // 파일명 유효성 검사 (제거 잘 됐는지)
+        return saveInternal(file.getInputStream(), originName, file.getContentType(), file.getSize());
+    }
+
+    @Override
+    @Transactional
+    public FileMeta save(File file, String contentType) throws IOException {
+        String originName = StringUtils.cleanPath(file.getName());
+
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return saveInternal(inputStream, originName, contentType, file.length());
+        }
+    }
+
+    // 공통 저장 로직
+    private FileMeta saveInternal(InputStream inputStream, String originName, String contentType, long size) throws IOException {
+        // 파일명 유효성 검사
         if (originName.contains("..")) {
             throw new BusinessException(FileErrorCode.INVALID_FILE_NAME);
         }
@@ -70,17 +85,27 @@ public class FileStorageServiceImpl implements FileStorageService {
         Path targetLocation = this.uploadPath.resolve(savedName);
 
         // 파일 저장 (원래 있던 파일은 덮어쓰기)
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(inputStream, targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-        // 메타 정보 DB 저장
-        FileMeta fileMeta = FileMeta.builder()
-            .originName(originName)
-            .path(targetLocation.toString())
-            .type(file.getContentType())
-            .size(file.getSize())
-            .build();
+        try {
+            // 메타 정보 DB 저장
+            FileMeta fileMeta = FileMeta.builder()
+                .originName(originName)
+                .path(targetLocation.toString())
+                .type(contentType)
+                .size(size)
+                .build();
 
-        return fileRepository.save(fileMeta);
+            return fileRepository.save(fileMeta);
+        } catch (Exception e) {
+            // DB 저장 실패 시 파일 삭제 (롤백)
+            try {
+                Files.deleteIfExists(targetLocation);
+            } catch (IOException deleteEx) {
+                log.error("파일 삭제 실패 (롤백 중): {}", targetLocation, deleteEx);
+            }
+            throw e;
+        }
     }
 
     @Override
