@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
+import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
@@ -23,8 +24,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -46,16 +45,21 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     private final BackupHistoryMapper backupHistoryMapper;
     private final FileStorageService fileStorageService;
+    private final IpUtil ipUtil;
+
+    private static final String CSV_HEADER = "ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태";
+    private static final String CSV_HEADNAME = "employee_backup";
+    private static final String CSV_CONTENTTYPE = ".csv";
 
     @Override
-    public BackupHistoryDto create(String worker) throws UnknownHostException {
+    public BackupHistoryDto create(String worker) {
 
         Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
 
         // 예외처리 추후 수정 예정
-//        if (runningHistory.isPresent()) {
-//            throw new IllegalStateException("이미 진행중인 백업이 존재합니다. (ID: " + runningHistory.get().getId() + ")");
-//        }
+        if (runningHistory.isPresent()) {
+            throw new IllegalStateException("이미 진행중인 백업이 존재합니다. (ID: " + runningHistory.get().getId() + ")");
+        }
 
         /*IP 주소
          * 배치 시스템요청: sytsem
@@ -64,7 +68,8 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         String workerIp = worker;
 
         if (worker == null) {
-            workerIp = InetAddress.getLocalHost().getHostAddress();
+            workerIp = ipUtil.getClientIp();
+            System.out.println(workerIp);
         }
 
         Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
@@ -87,15 +92,11 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         try {
             log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
-            System.out.println("dd: " + convertFileName(backupHistory));
-
-            String originalFileName = "employee_backup_" + convertFileName(backupHistory);
-
-//            String originalFileName = "employee_backup_";
+            String originalFileName = CSV_HEADNAME + "_" + convertFileName(backupHistory);
 
             //임시 파일 생성 (OS의 임시 폴더에 생성됨)
             //메모리에 저장하지 않고 디스크에 넣어서 사용
-            tempPath = Files.createTempFile(originalFileName, ".csv");
+            tempPath = Files.createTempFile(originalFileName, CSV_CONTENTTYPE);
             File tempFile = tempPath.toFile();
 
             System.out.println(tempFile.getName());
@@ -134,10 +135,10 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     // 추후 페이지 네이션 구현
     @Override
-    public List<BackupHistoryDto> findLatestByStatus(BackupHistoryStatus status) {
-        return backupHistoryRepository.findAllByStatusOrderByStartedAtDesc(status).stream()
+    public BackupHistoryDto findLatestByStatus(BackupHistoryStatus status) {
+        return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(status)
             .map(backupHistoryMapper::toDto)
-            .toList();
+            .orElse(null);
     }
 
     //스탭 단위로 트랜잭션을 나눔
@@ -167,7 +168,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     }
 
     //백업 실패
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void failureBackupHistory(BackupHistory backupHistory, Exception e) {
         backupHistory.fail();
         backupHistoryRepository.save(backupHistory);
@@ -188,7 +189,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         try (
             BufferedWriter writer = new BufferedWriter(new FileWriter(file))
         ) {
-            writer.write("ID, 직원번호, 이름, 이메일, 부서, 직급, 입사일, 상태");
+            writer.write(CSV_HEADER);
             writer.newLine();
 
             //OOM 방지: 페이징으로 끊어서 조회

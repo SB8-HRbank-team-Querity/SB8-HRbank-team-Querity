@@ -8,9 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.UnknownHostException;
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/backups")
@@ -19,7 +16,7 @@ public class BackupHistoryController {
     private final BackupHistoryService backupHistoryService;
 
     @PostMapping
-    public ResponseEntity<BackupHistoryDto> create() throws UnknownHostException {
+    public ResponseEntity<BackupHistoryDto> create() {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(backupHistoryService.create(null));
@@ -33,8 +30,8 @@ public class BackupHistoryController {
 //    }
 //
     @GetMapping(path = "/latest")
-    public ResponseEntity<List<BackupHistoryDto>> findLatestByStatus(
-        @RequestParam("status") BackupHistoryStatus status
+    public ResponseEntity<BackupHistoryDto> findLatestByStatus(
+        @RequestParam(value = "status", defaultValue = "COMPLETED") BackupHistoryStatus status
     ) {
         return ResponseEntity
             .status(HttpStatus.OK)

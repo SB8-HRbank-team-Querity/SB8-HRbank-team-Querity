@@ -17,6 +17,4 @@ public interface BackupHistoryRepository extends JpaRepository<BackupHistory, Lo
     Optional<Instant> findLatestEndedAt();
 
     Optional<BackupHistory> findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus status);
-
-    List<BackupHistory> findAllByStatusOrderByStartedAtDesc(BackupHistoryStatus status);
 }
