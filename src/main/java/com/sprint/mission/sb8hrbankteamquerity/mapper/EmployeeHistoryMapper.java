@@ -51,7 +51,6 @@ public interface EmployeeHistoryMapper {
 
     private void compareAndAdd(Map<String, DiffDto> diffDto, String key, Object oldValue, Object newValue) {
 
-        if (newValue == null) return;
         if (oldValue != null && oldValue.equals(newValue)) return;
 
         String oldStr = (oldValue != null) ? String.valueOf(oldValue) : null;
