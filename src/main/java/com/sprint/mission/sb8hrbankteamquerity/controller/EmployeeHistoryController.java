@@ -1,13 +1,14 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class EmployeeHistoryController {
     private final EmployeeHistoryService employeeHistoryService;
 
     @GetMapping
-    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistoryById () {
+    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistoryById() {
         List<ChangeLogDto> employeeHistoryDTOList =
             employeeHistoryService.getAllEmployeeHistory();
 
@@ -26,10 +27,10 @@ public class EmployeeHistoryController {
     }
 
     @GetMapping("/{employeeHistoryId}")
-    public ResponseEntity<ChangeLogDto> getEmployeeHistoryById(
+    public ResponseEntity<ChangeLogDetailDto> getEmployeeHistoryById(
         @PathVariable Long employeeHistoryId
     ) {
-        ChangeLogDto employeeHistoryList =
+        ChangeLogDetailDto employeeHistoryList =
             employeeHistoryService.getEmployeeHistoryById(employeeHistoryId);
 
         return ResponseEntity.ok(employeeHistoryList);

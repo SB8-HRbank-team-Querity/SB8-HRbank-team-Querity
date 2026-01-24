@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service;
 
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 
@@ -10,5 +11,5 @@ public interface EmployeeHistoryService {
 
     List<ChangeLogDto> getAllEmployeeHistory();
 
-    ChangeLogDto getEmployeeHistoryById(Long employeeHistoryId);
+    ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId);
 }

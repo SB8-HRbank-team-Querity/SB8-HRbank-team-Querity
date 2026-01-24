@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
@@ -50,11 +51,11 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     }
 
     @Override
-    public ChangeLogDto getEmployeeHistoryById(Long employeeHistoryId) {
+    public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
                 orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
 
-        return employeeHistoryMapper.toGetResponse(employeeHistory);
+        return employeeHistoryMapper.toDetailResponse(employeeHistory);
     }
 }

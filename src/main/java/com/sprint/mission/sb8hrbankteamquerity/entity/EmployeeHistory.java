@@ -8,7 +8,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -31,11 +30,11 @@ public class EmployeeHistory extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "changed_detail", nullable = false)
-    private List<DiffDto> changed_detail;
+    private Map<String, DiffDto> changed_detail;
 
     @Column(name = "employee_name", nullable = false, length = 50)
-    private String employee_name;
+    private String employeeName;
 
     @Column(name = "employee_number", columnDefinition = "jsonb", nullable = false, length = 50)
-    private String employee_number;
+    private String employeeNumber;
 }
