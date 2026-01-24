@@ -6,7 +6,10 @@ import com.sprint.mission.sb8hrbankteamquerity.exception.FileErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,12 +55,27 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     @Transactional
     public FileMeta save(MultipartFile file) throws IOException {
-
-        // 파일명 정리 (../ 같은 경로 조작 문자 제거)
         String originName = StringUtils.cleanPath(
             Objects.requireNonNull(file.getOriginalFilename()));
+        
+        return saveInternal(file.getInputStream(), originName, file.getContentType(), file.getSize());
+    }
 
-        // 파일명 유효성 검사 (제거 잘 됐는지)
+    @Override
+    @Transactional
+    public FileMeta save(File file, String contentType) throws IOException {
+        // 파일명 정리 (../ 같은 경로 조작 문자 제거)
+        String originName = StringUtils.cleanPath(
+            Objects.requireNonNull(file.getName()));
+        
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return saveInternal(inputStream, originName, contentType, file.length());
+        }
+    }
+
+    // 공통 저장 로직
+    private FileMeta saveInternal(InputStream inputStream, String originName, String contentType, long size) throws IOException {
+        // 파일명 유효성 검사
         if (originName.contains("..")) {
             throw new BusinessException(FileErrorCode.INVALID_FILE_NAME);
         }
@@ -69,14 +87,14 @@ public class FileStorageServiceImpl implements FileStorageService {
         Path targetLocation = this.uploadPath.resolve(savedName);
 
         // 파일 저장 (원래 있던 파일은 덮어쓰기)
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(inputStream, targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         // 메타 정보 DB 저장
         FileMeta fileMeta = FileMeta.builder()
             .originName(originName)
             .path(targetLocation.toString())
-            .type(file.getContentType())
-            .size(file.getSize())
+            .type(contentType)
+            .size(size)
             .build();
 
         return fileRepository.save(fileMeta);
