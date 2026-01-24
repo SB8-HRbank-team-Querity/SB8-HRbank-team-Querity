@@ -3,16 +3,17 @@ package com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
-public record EmployeeHistoryResponse(
+public record ChangeLogDetailDto(
     Long id,
     EmployeeHistoryType type,
+    String employee_number,
     String memo,
-    String ip_address,
-    Instant created_at,
-    Map<String, Object> changed_detail,
+    String ipAddress,
+    Instant at,
     String employee_name,
-    String employee_number
-){
+    Long profileImageId,
+    List<DiffDto> diffs
+) {
 }

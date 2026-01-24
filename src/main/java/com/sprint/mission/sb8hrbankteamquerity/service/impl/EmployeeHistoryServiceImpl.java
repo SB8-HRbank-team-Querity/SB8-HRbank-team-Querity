@@ -1,6 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryResponse;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
@@ -26,13 +26,13 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
             EmployeeHistoryType.CREATED, //EmployeeHistoryType 중 하나 하시면 됩니다.
             "메모내용",
             "ip 주소 값",
-            mapper.toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto),
+            EmployeeHistoryMapper.toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto),
             "직원이름",
             "사원번호"
         ));
         */
     @Override
-    public EmployeeHistoryResponse saveEmployeeHistory(EmployeeHistorySaveRequest save) {
+    public ChangeLogDto saveEmployeeHistory(EmployeeHistorySaveRequest save) {
         EmployeeHistory entity = employeeHistoryMapper.toEntity(save);
 
         return employeeHistoryMapper.toGetResponse(
@@ -41,16 +41,16 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     }
 
     @Override
-    public List<EmployeeHistoryResponse> getAllEmployeeHistory() {
-        List<EmployeeHistoryResponse> employeeHistoryResponseList =
+    public List<ChangeLogDto> getAllEmployeeHistory() {
+        List<ChangeLogDto> changeLogDtoList =
             employeeHistoryRepository.findAll().stream().
                 map(employeeHistoryMapper::toGetResponse).toList();
 
-        return employeeHistoryResponseList;
+        return changeLogDtoList;
     }
 
     @Override
-    public EmployeeHistoryResponse getByIdEmployeeHistory(Long employeeHistoryId) {
+    public ChangeLogDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
                 orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
