@@ -40,7 +40,7 @@ public class DiscordWebhookServiceImpl implements DiscordWebhookService {
         "EMP_HIST", "518432642597912596",        // 황진서
         "BACKUP", "1436214390155378718",         // 이재준
         "FILE", "344097279885574144",            // 홍성휘
-        "GLOBAL", "@everyone"                        // 전부 다!
+        "GLOBAL", "everyone"                        // 전부 다!
     );
 
     private final RestTemplate restTemplate = new RestTemplate();
