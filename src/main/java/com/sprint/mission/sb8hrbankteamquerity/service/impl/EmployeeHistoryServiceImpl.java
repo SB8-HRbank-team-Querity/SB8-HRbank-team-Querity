@@ -4,13 +4,11 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDeta
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
-import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
-import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
-import io.swagger.v3.oas.annotations.Parameters;
+import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeHistorySpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,12 +16,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Base64;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -32,7 +30,6 @@ import java.util.List;
 public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final EmployeeHistoryMapper employeeHistoryMapper;
-
 
     /*요청 예시
     EmployeeHistoryService.saveEmployeeHistory(
@@ -55,35 +52,26 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     }
 
     @Override
-    public List<ChangeLogDto> getAllEmployeeHistory(
-            EmployeeHistoryFilter filter
-        ) {
-        Instant from = filter.atFrom() == null ? null :
-            LocalDate.parse(filter.atFrom()).atStartOfDay().toInstant(ZoneOffset.UTC);
+    public List<ChangeLogDto> getAllEmployeeHistory(EmployeeHistoryFilter filter) {
 
-        Instant to = filter.atTo() == null ? null :
-            LocalDate.parse(filter.atTo()).atStartOfDay().toInstant(ZoneOffset.UTC);
-
-        String employeeNumber =
-            (filter.employeeNumber() == null || filter.employeeNumber().isBlank()) ? null : filter.employeeNumber();
-
-        String memo =
-            (filter.memo() == null || filter.memo().isBlank()) ? null : filter.memo();
-
-        String ipAddress =
-            (filter.ipAddress() == null || filter.ipAddress().isBlank()) ? null : filter.ipAddress();
-
+        // 기본 정렬 기준, id
         String sortField = filter.sortField() == null ? "id" : filter.sortField();
-        Sort.Direction direction = "desc".equalsIgnoreCase(filter.direction().toString()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        // 기본 출력 순서, 내림차순
+        String direc = filter.direction() == null ? "desc" : filter.direction().toString();
+
+        Sort.Direction direction = "desc".equalsIgnoreCase(direc) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortField);
 
-        Pageable pageable = PageRequest.of(0, 21, sort);
+        Pageable pageable = PageRequest.of(0, 20, sort);
 
-        // 조회
-        Page<EmployeeHistory> employeeHistoryList = employeeHistoryRepository.findAllFilter(
-            filter.idAfter(), employeeNumber, filter.type(),  memo, ipAddress, from, to, pageable);
+        Page<EmployeeHistory> employeeHistoryList =
+            employeeHistoryRepository.findAll(
+                EmployeeHistorySpecification.filter(filter),
+                pageable
+            );
 
-        List<ChangeLogDto> changeLogDtoList = employeeHistoryList.stream().map(employeeHistoryMapper::toGetResponse).toList();
+        boolean hasNext = employeeHistoryList.getTotalElements() > 20;
 
         return employeeHistoryList.map(employeeHistoryMapper::toGetResponse).getContent();
     }
@@ -95,5 +83,49 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
                 orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
 
         return employeeHistoryMapper.toDetailResponse(employeeHistory);
+    }
+
+    @Override
+    public Long getEmployeeHistoryCount(String fromDate, String toDate) {
+
+        Instant end = null;
+        Instant start = null;
+
+        if (fromDate == null && toDate == null) {
+            end = Instant.now();
+            start = end.minus(7, ChronoUnit.DAYS);
+
+        } else if (fromDate == null && toDate != null) {
+            start = LocalDate.parse(toDate)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+            end = LocalDate.parse(toDate)
+                .plusDays(1)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+        } else if (fromDate != null && toDate == null) {
+            start = LocalDate.parse(fromDate)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+            end = LocalDate.parse(fromDate)
+                .plusDays(1)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+        } else {
+            start = LocalDate.parse(fromDate)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+            end = LocalDate.parse(toDate)
+                .plusDays(1)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+        }
+
+        return employeeHistoryRepository.countEmployeeHistoryByCreatedAtBetween(start, end);
     }
 }

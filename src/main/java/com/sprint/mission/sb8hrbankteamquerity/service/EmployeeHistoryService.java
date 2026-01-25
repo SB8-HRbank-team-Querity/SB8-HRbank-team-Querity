@@ -14,4 +14,6 @@ public interface EmployeeHistoryService {
     List<ChangeLogDto> getAllEmployeeHistory(EmployeeHistoryFilter employeeHistoryFilter);
 
     ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId);
+
+    Long getEmployeeHistoryCount(String fromDate, String toDate);
 }
