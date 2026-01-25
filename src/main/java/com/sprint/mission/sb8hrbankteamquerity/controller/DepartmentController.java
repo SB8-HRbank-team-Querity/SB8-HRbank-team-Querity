@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
+import com.sprint.mission.sb8hrbankteamquerity.controller.docs.DepartmentApi;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.CursorPageResponseDepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentCreateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/departments")
-public class DepartmentController {
+public class DepartmentController implements DepartmentApi {
 
     private final DepartmentService departmentService;
 
