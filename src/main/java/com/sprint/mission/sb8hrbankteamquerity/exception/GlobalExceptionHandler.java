@@ -91,4 +91,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(code.getHttpStatus()).body(response);
     }
+
+    // 그 외 모든 예외 처리 (최상위 예외 처리)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
+        ErrorCode code = GlobalErrorCode.INTERNAL_SERVER_ERROR;
+
+        // 로그로 상세 에러 기록
+        log.error("서버 내부 오류 발생 : code={}, message={}, path={}",
+            code.getCode(), e.getMessage(), request.getRequestURI(), e);
+
+        // 디스코드 알림 발송
+        discordWebhookService.sendAlert(code, e.getMessage(), request.getRequestURI());
+
+        // 클라이언트에 리턴해줄 오류 메시지 응답 생성
+        ErrorResponse response = ErrorResponse.of(code, code.getMessage(), request.getRequestURI());
+
+        return ResponseEntity.status(code.getHttpStatus()).body(response);
+    }
 }
