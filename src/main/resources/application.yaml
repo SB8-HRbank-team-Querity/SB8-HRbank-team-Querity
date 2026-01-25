@@ -44,3 +44,9 @@ logging:
  # 3. server config
 server:
   port: 8080
+
+# 4. backup
+
+backup:
+    scheduler:
+        interval: 10000000 # 1시간, ms 기준, 시간은 테스트 중이므로 변동 사항있음

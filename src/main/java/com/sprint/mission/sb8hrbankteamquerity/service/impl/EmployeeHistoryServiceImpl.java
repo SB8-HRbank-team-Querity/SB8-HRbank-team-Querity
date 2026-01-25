@@ -1,15 +1,18 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryGetResponse;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
+import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -20,32 +23,44 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final EmployeeHistoryMapper employeeHistoryMapper;
 
-    @Override
-    public EmployeeHistoryGetResponse saveEmployeeHistory(EmployeeHistorySaveRequest employeeHistorySaveRequest) {
-        // 필요한 로직이 저장이 됐는지 확인만 있으면 될거 같은데
-        EmployeeHistory employeeHistory =
-            employeeHistoryRepository.save(
-                employeeHistoryMapper.toEntity(employeeHistorySaveRequest));
 
-        return employeeHistoryMapper.toGetResponse(employeeHistory);
+    /*요청 예시
+    EmployeeHistoryService.saveEmployeeHistory(
+        new EmployeeHistorySaveRequest(
+            EmployeeHistoryType.CREATED, //EmployeeHistoryType 중 하나 하시면 됩니다.
+            "메모내용",
+            "ip 주소 값",
+            EmployeeHistoryMapper.toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto),
+            "직원이름",
+            "사원번호"
+        ));
+        */
+    @Override
+    public ChangeLogDto saveEmployeeHistory(EmployeeHistorySaveRequest save) {
+        EmployeeHistory entity = employeeHistoryMapper.toEntity(save);
+
+        return employeeHistoryMapper.toGetResponse(
+            employeeHistoryRepository.save(entity)
+        );
     }
 
     @Override
-    public List<EmployeeHistoryGetResponse> getAllEmployeeHistory() {
-        List<EmployeeHistoryGetResponse> employeeHistoryGetResponseList =
+    public List<ChangeLogDto> getAllEmployeeHistory(
+        @RequestParam EmployeeHistoryFilter filter
+        ) {
+        List<ChangeLogDto> changeLogDtoList =
             employeeHistoryRepository.findAll().stream().
                 map(employeeHistoryMapper::toGetResponse).toList();
 
-        return employeeHistoryGetResponseList;
+        return changeLogDtoList;
     }
 
-
     @Override
-    public EmployeeHistoryGetResponse getByIdEmployeeHistory(Long employeeHistoryId) {
+    public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
-            orElseThrow(()-> new NullPointerException("찾을 수 없는 이력입니다."));
+                orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
 
-        return employeeHistoryMapper.toGetResponse(employeeHistory);
+        return employeeHistoryMapper.toDetailResponse(employeeHistory);
     }
 }

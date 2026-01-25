@@ -2,14 +2,14 @@ package com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 
-import java.util.Map;
+import java.time.Instant;
 
-public record EmployeeHistorySaveRequest(
+public record ChangeLogDto(
+    Long id,
     EmployeeHistoryType type,
+    String employeeNumber,
     String memo,
     String ipAddress,
-    Map<String, DiffDto> changed_detail,
-    String employeeName,
-    String employeeNumber
+    Instant at
 ) {
 }

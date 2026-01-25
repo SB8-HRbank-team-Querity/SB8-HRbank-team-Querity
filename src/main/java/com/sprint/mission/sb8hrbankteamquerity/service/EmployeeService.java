@@ -10,5 +10,7 @@ public interface EmployeeService {
     EmployeePageResponse findAll(EmployeeSearchDto Dto);
 
     EmployeeDto findById(Long id);
+
+    void delete(Long id);
 }
 
