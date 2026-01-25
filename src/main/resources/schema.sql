@@ -9,7 +9,7 @@ CREATE TABLE department
 (
     id               serial PRIMARY KEY,
     name             varchar(100) NOT NULL UNIQUE,
-    description      text,
+    description      text         NOT NULL,
     established_date timestamptz  NOT NULL,
     created_at       timestamptz  NOT NULL,
     updated_at       timestamptz  NOT NULL
@@ -161,13 +161,15 @@ VALUES ('Admin_Sys', NOW() - INTERVAL '2 days', NOW() - INTERVAL '115 minutes', 
        ('Scheduler', NOW() - INTERVAL '12 hours', NULL, 'FAILED', NOW(), NULL),
        ('Admin_Dev', NOW() - INTERVAL '10 hours', NOW() - INTERVAL '9 hours', 'COMPLETED', NOW(), NULL),
        ('Admin_Sys', NOW() - INTERVAL '8 hours', NOW() - INTERVAL '8 hours', 'SKIPPED', NOW(), NULL),
-       ('Scheduler', NOW() - INTERVAL '6 hours', NULL, 'IN_PROGRESS', NOW(), NULL),
+       ('Scheduler', NOW() - INTERVAL '6 hours', NULL, 'COMPLETED', NOW(), NULL),
        ('Admin_Dev', NOW() - INTERVAL '4 hours', NOW() - INTERVAL '235 minutes', 'COMPLETED', NOW(), NULL),
-       ('Admin_Sys', NOW() - INTERVAL '2 hours', NULL, 'FAILED', NOW(), NULL),
+       ('Admin_Sys', NOW() - INTERVAL '2 hours', NULL, 'COMPLETED', NOW(), NULL),
+       ('Scheduler', NOW() - INTERVAL '1 hour', NULL, 'COMPLETED', NOW(), NULL),
        ('Scheduler', NOW() - INTERVAL '1 hour', NULL, 'IN_PROGRESS', NOW(), NULL),
-       ('Admin_Sys', NOW(), NULL, 'IN_PROGRESS', NOW(), NULL);
+       ('Admin_Sys', NOW(), NULL, 'COMPLETED', NOW(), NULL);
 
 SELECT *
+
 FROM employee;
 SELECT *
 FROM department;
