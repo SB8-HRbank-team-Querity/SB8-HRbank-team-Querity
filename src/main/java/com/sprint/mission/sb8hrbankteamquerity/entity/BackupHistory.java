@@ -40,10 +40,10 @@ public class BackupHistory extends BaseEntity {
     private BackupHistoryStatus status;
 
     //양방향 일대일 관계
+    //file이 없을수도 있음
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "file_id",
-        nullable = false
+        name = "file_id"
     )
     private FileMeta fileMeta;
 
@@ -67,5 +67,9 @@ public class BackupHistory extends BaseEntity {
     public void skip() {
         this.status = BackupHistoryStatus.SKIPPED;
         this.endedAt = Instant.now();
+    }
+
+    public void updateFile(FileMeta fileMeta) {
+        this.fileMeta = fileMeta;
     }
 }
