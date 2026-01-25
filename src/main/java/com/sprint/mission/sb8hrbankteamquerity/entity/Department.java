@@ -5,10 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,7 +21,7 @@ public class Department extends BaseUpdatableEntity {
     @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "established_date", nullable = false)

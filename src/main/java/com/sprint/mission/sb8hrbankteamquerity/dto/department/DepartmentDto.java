@@ -1,12 +1,12 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.department;
 
-import java.util.Date;
+import java.time.Instant;
 
 public record DepartmentDto(
     Long id,
     String name,
     String description,
-    Date establishedDate,
+    Instant establishedDate,
     Integer employeeCount) {
 
 }
