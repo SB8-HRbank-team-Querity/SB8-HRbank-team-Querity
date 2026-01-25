@@ -141,6 +141,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BackupHistoryDto> findAll() {
         return List.of();
     }
