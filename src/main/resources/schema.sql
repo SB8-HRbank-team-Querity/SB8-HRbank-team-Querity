@@ -10,7 +10,7 @@ CREATE TABLE department
     id               serial PRIMARY KEY,
     name             varchar(100) NOT NULL UNIQUE,
     description      text         NOT NULL,
-    established_date timestamptz  NOT NULL,
+    established_date date         NOT NULL,
     created_at       timestamptz  NOT NULL,
     updated_at       timestamptz  NOT NULL
 );
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS employee
     email            varchar(100)                                       NOT NULL,
     employee_number  varchar(50)                                        NOT NULL,
     position         varchar(50)                                        NOT NULL,
-    hire_date        timestamptz                                        NOT NULL,
+    hire_date        date                                               NOT NULL,
     status           varchar(50)                                        NOT NULL DEFAULT 'ACTIVE',
     created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -84,16 +84,16 @@ CREATE INDEX idx_file_meta_created_at ON file_meta (created_at);
 
 -- 더미데이터
 INSERT INTO department (name, description, established_date, created_at, updated_at)
-VALUES ('인사부', '직원 채용 및 관리', '2000-01-01 09:00:00+09', NOW(), NOW()),
-       ('재무부', '회계 및 재무 관리', '2001-02-15 09:00:00+09', NOW(), NOW()),
-       ('영업부', '판매 및 고객 관리', '2002-03-10 09:00:00+09', NOW(), NOW()),
-       ('마케팅부', '광고 및 홍보', '2003-04-05 09:00:00+09', NOW(), NOW()),
-       ('기술부', '시스템 개발 및 유지보수', '2004-05-20 09:00:00+09', NOW(), NOW()),
-       ('연구개발부', '신제품 개발', '2005-06-15 09:00:00+09', NOW(), NOW()),
-       ('고객지원부', '고객 상담 및 지원', '2006-07-10 09:00:00+09', NOW(), NOW()),
-       ('품질관리부', '제품 품질 관리', '2007-08-01 09:00:00+09', NOW(), NOW()),
-       ('물류부', '재고 및 배송 관리', '2008-09-12 09:00:00+09', NOW(), NOW()),
-       ('전략기획부', '회사 전략 및 계획 수립', '2009-10-25 09:00:00+09', NOW(), NOW());
+VALUES ('인사부', '직원 채용 및 관리', '2000-01-01', NOW(), NOW()),
+       ('재무부', '회계 및 재무 관리', '2001-02-15', NOW(), NOW()),
+       ('영업부', '판매 및 고객 관리', '2002-03-10', NOW(), NOW()),
+       ('마케팅부', '광고 및 홍보', '2003-04-05', NOW(), NOW()),
+       ('기술부', '시스템 개발 및 유지보수', '2004-05-20', NOW(), NOW()),
+       ('연구개발부', '신제품 개발', '2005-06-15', NOW(), NOW()),
+       ('고객지원부', '고객 상담 및 지원', '2006-07-10', NOW(), NOW()),
+       ('품질관리부', '제품 품질 관리', '2007-08-01', NOW(), NOW()),
+       ('물류부', '재고 및 배송 관리', '2008-09-12', NOW(), NOW()),
+       ('전략기획부', '회사 전략 및 계획 수립', '2009-10-25', NOW(), NOW());
 
 
 INSERT INTO file_meta (origin_name, size, type, path, created_at, updated_at)
@@ -108,19 +108,17 @@ VALUES ('profile_01.png', 150200, 'image/png', '/uploads/1.png', NOW(), NOW()),
        ('contract.pdf', 320500, 'application/pdf', '/docs/contract.pdf', NOW(), NOW()),
        ('avatar_tmp.png', 12000, 'image/png', '/tmp/avatar.png', NOW(), NOW());
 
-INSERT INTO employee (name, email, employee_number, position, hire_date, status, department_id, profile_image_id,
-                      created_at, updated_at)
-VALUES ('홍길동', 'gildong@company.com', 'EMP202001', '팀장', '2020-01-01', 'ACTIVE', 1, 1, NOW(), NOW()),
-       ('김철수', 'chulsu@company.com', 'EMP202002', '대리', '2020-02-15', 'ACTIVE', 1, 2, NOW(), NOW()),
-       ('이영희', 'young@company.com', 'EMP202003', '과장', '2020-03-10', 'ACTIVE', 2, 3, NOW(), NOW()),
-       ('박지민', 'jimin@company.com', 'EMP202101', '사원', '2021-01-20', 'ACTIVE', 2, NULL, NOW(), NOW()),
-       ('최준호', 'junho@company.com', 'EMP202102', '차장', '2021-04-05', 'ACTIVE', 2, NULL, NOW(), NOW()),
-       ('강미나', 'mina@company.com', 'EMP202201', '대리', '2022-05-12', 'ACTIVE', 3, NULL, NOW(), NOW()),
-       ('윤도현', 'dh.yoon@company.com', 'EMP202202', '사원', '2022-06-01', 'ON_LEAVE', 4, 4, NOW(), NOW()),
-       ('정수지', 'suzi@company.com', 'EMP202301', '주임', '2023-02-11', 'ACTIVE', 5, NULL, NOW(), NOW()),
-       ('한가인', 'gain@company.com', 'EMP202302', '팀장', '2023-03-01', 'ACTIVE', 6, NULL, NOW(), NOW()),
-       ('송강호', 'gh.song@company.com', 'EMP202303', '과장', '2023-09-15', 'ACTIVE', 6, NULL, NOW(), NOW());
-
+INSERT INTO employee (name, email, employee_number, position, hire_date, status, department_id, profile_image_id)
+VALUES ('김민수', 'minsu.kim@company.com', 'EMP-001', 'BACKEND', '2022-03-01', 'ACTIVE', 1, NULL),
+       ('이서연', 'seoyeon.lee@company.com', 'EMP-002', 'FRONTEND', '2021-07-15', 'ACTIVE', 2, NULL),
+       ('박지훈', 'jihoon.park@company.com', 'EMP-003', 'DESIGNER', '2020-11-20', 'ON_LEAVE', 3, NULL),
+       ('최유진', 'yujin.choi@company.com', 'EMP-004', 'HR', '2019-01-10', 'ACTIVE', 1, NULL),
+       ('정현우', 'hyunwoo.jung@company.com', 'EMP-005', 'BACKEND', '2023-02-05', 'ACTIVE', 2, NULL),
+       ('한지민', 'jimin.han@company.com', 'EMP-006', 'FRONTEND', '2022-09-12', 'RESIGNED', 3, NULL),
+       ('오세훈', 'sehun.oh@company.com', 'EMP-007', 'QA', '2021-04-01', 'ACTIVE', 1, NULL),
+       ('윤아린', 'arin.yoon@company.com', 'EMP-008', 'PM', '2018-06-25', 'ACTIVE', 2, NULL),
+       ('임도현', 'dohyun.lim@company.com', 'EMP-009', 'DEVOPS', '2020-08-17', 'ON_LEAVE', 3, NULL),
+       ('장수빈', 'subin.jang@company.com', 'EMP-010', 'BACKEND', '2024-01-02', 'ACTIVE', 1, NULL);
 INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
 VALUES ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
     "dept": "인사팀"
