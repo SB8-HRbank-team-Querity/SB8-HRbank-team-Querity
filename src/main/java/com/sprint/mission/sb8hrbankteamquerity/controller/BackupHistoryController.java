@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/backups")
@@ -22,13 +24,13 @@ public class BackupHistoryController {
             .body(backupHistoryService.create(null));
     }
 
-    //    @GetMapping
-//    public ResponseEntity<List<BackupDto>> findAll() {
-//        return ResponseEntity
-//            .status(HttpStatus.OK)
-//            .body(backupHistoryService.findAll());
-//    }
-//
+    @GetMapping
+    public ResponseEntity<List<BackupHistoryDto>> findAll() {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(backupHistoryService.findAll());
+    }
+
     @GetMapping(path = "/latest")
     public ResponseEntity<BackupHistoryDto> findLatestByStatus(
         @RequestParam(value = "status", defaultValue = "COMPLETED") BackupHistoryStatus status
