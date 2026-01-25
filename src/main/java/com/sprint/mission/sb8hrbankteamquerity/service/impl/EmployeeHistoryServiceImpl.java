@@ -91,10 +91,12 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         Instant end = null;
         Instant start = null;
 
+        // 파라미터가 없으면 기본적으로 최근 1주일 출력
         if (fromDate == null && toDate == null) {
             end = Instant.now();
             start = end.minus(7, ChronoUnit.DAYS);
 
+            // 날짜를 하나만 입력 했을 경우 1, 그날 하루치만 나오게
         } else if (fromDate == null && toDate != null) {
             start = LocalDate.parse(toDate)
                 .atStartOfDay()
@@ -105,6 +107,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
                 .atStartOfDay()
                 .toInstant(ZoneOffset.UTC);
 
+            // 날짜를 하나만 입력 했을 경우 2. 그날 하루치만 나오게
         } else if (fromDate != null && toDate == null) {
             start = LocalDate.parse(fromDate)
                 .atStartOfDay()
@@ -115,6 +118,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
                 .atStartOfDay()
                 .toInstant(ZoneOffset.UTC);
 
+            // 날짜를 2개 입력 했을 경우
         } else {
             start = LocalDate.parse(fromDate)
                 .atStartOfDay()
