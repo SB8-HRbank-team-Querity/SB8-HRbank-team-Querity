@@ -37,9 +37,8 @@ public class EmployeeController implements EmployeeApi {
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<EmployeeDto> create(
-        @RequestPart("request") EmployeeCreateRequest request,
+        @RequestPart("employee") EmployeeCreateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException {
-
         Long id = null;
         if (profile != null && !profile.isEmpty()) {
             id = fileStorageService.save(profile).getId();
@@ -51,7 +50,7 @@ public class EmployeeController implements EmployeeApi {
     @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<EmployeeDto> update(
         @PathVariable Long id,
-        @RequestPart("request") EmployeeUpdateRequest request,
+        @RequestPart("employee") EmployeeUpdateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException {
 
         Long profileId = null;

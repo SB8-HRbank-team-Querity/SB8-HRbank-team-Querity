@@ -1,16 +1,20 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
+import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
+import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
+import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
-import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
+import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -30,10 +34,12 @@ import java.util.List;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
-    private final EmployeeHistoryRepository employeeHistoryRepository;
+    private final EmployeeHistoryService employeeHistoryService;
+    private final EmployeeHistoryMapper employeeHistoryMapper;
     private final DepartmentRepository departmentRepository;
     private final FileRepository fileRepository;
     private final EmployeeMapper employeeMapper;
+    private final IpUtil ipUtil;
 
 
     @Override
@@ -61,11 +67,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Sort.Direction direction = "desc".equalsIgnoreCase(Dto.sortDirection()) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortField);
 
-        Instant from = Dto.hireDateFrom() == null ? null :
-            LocalDate.parse(Dto.hireDateFrom()).atStartOfDay().toInstant(ZoneOffset.UTC);
+        LocalDate from = Dto.hireDateFrom() == null ? null :
+            LocalDate.parse(Dto.hireDateFrom());
 
-        Instant to = Dto.hireDateTo() == null ? null :
-            LocalDate.parse(Dto.hireDateTo()).atStartOfDay().toInstant(ZoneOffset.UTC);
+        LocalDate to = Dto.hireDateTo() == null ? null :
+            LocalDate.parse(Dto.hireDateTo());
 
         Pageable pageable = PageRequest.of(0, size + 1, sort);
 
@@ -111,15 +117,29 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee = Employee.createProfile(request.name(), request.email(), department, request.position(), request.hireDate(), id);
         }
         Employee employeeSaved = employeeRepository.save(employee);
-        return employeeMapper.toDto(employeeSaved);
+        EmployeeDto newDto = employeeMapper.toDto(employeeSaved);
+
+        employeeHistoryService.saveEmployeeHistory(
+            new EmployeeHistorySaveRequest(
+                EmployeeHistoryType.CREATED,
+                request.memo(),
+                ipUtil.getClientIp(),
+                employeeHistoryMapper.toChangedDetail(newDto,null),
+                employee.getName(),
+                employee.getEmployeeNumber()
+            ));
+
+        return newDto;
     }
 
 
     @Override
+    @Transactional
     public EmployeeDto update(Long id, EmployeeUpdateRequest request, Long profileId) {
 
         Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
+        EmployeeDto oldDto = employeeMapper.toDto(employee);
 
         Long oldProfileId = null;
         if (profileId != null) {
@@ -134,13 +154,22 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.update(request.name(), request.email(), department, request.position(), request.hireDate(), request.status(), profileId);
         employeeRepository.saveAndFlush(employee);
+        EmployeeDto newDto = employeeMapper.toDto(employee);
 
         if (profileId != null && oldProfileId != null) {
             fileRepository.deleteById(oldProfileId);
         }
 
         if (request.memo() != null && !request.memo().isEmpty()) {
-            // EmployeeHistoty save가 완성되면 구현할 예정입니다.
+            employeeHistoryService.saveEmployeeHistory(
+                new EmployeeHistorySaveRequest(
+                    EmployeeHistoryType.UPDATED,
+                    request.memo(),
+                    ipUtil.getClientIp(),
+                    employeeHistoryMapper.toChangedDetail(newDto, oldDto),
+                    employee.getName(),
+                    employee.getEmployeeNumber()
+                ));
         }
 
         return employeeMapper.toDto(employee);
@@ -152,7 +181,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
 
-        //직원이 fk, 먼저 삭제
         employeeRepository.deleteById(id);
         employeeRepository.flush();
 

@@ -2,7 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.dto.employee;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 public record EmployeeDto(
     Long id,
@@ -12,7 +12,7 @@ public record EmployeeDto(
     Long departmentId,
     String departmentName,
     String position,
-    Instant hireDate,
+    LocalDate hireDate,
     EmployeeStatus status,
     Long profileImageId
 ) {

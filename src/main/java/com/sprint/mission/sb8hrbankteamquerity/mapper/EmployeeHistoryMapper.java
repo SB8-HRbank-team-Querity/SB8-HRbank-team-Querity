@@ -38,6 +38,16 @@ public interface EmployeeHistoryMapper {
     default Map<String, DiffDto> toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto) {
         Map<String, DiffDto> diffDto = new HashMap<>();
 
+        if (oldDto == null) {
+            compareAndAdd(diffDto, "hireDate",null, newDto.hireDate());
+            compareAndAdd(diffDto, "name",null, newDto.name());
+            compareAndAdd(diffDto, "position",null, newDto.position());
+            compareAndAdd(diffDto, "departmentName", null,newDto.departmentName());
+            compareAndAdd(diffDto, "email", null,newDto.email());
+            compareAndAdd(diffDto, "employeeNumber", null,newDto.employeeNumber());
+            return diffDto;
+        }
+
         compareAndAdd(diffDto, "hireDate", oldDto.hireDate(), newDto.hireDate());
         compareAndAdd(diffDto, "name", oldDto.name(), newDto.name());
         compareAndAdd(diffDto, "position", oldDto.position(), newDto.position());
