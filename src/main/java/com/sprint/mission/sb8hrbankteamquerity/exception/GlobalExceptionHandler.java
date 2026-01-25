@@ -1,7 +1,9 @@
 package com.sprint.mission.sb8hrbankteamquerity.exception;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
+import com.sprint.mission.sb8hrbankteamquerity.service.DiscordWebhookService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,7 +16,10 @@ import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final DiscordWebhookService discordWebhookService;
 
     private static final String INCORRECT_PARAMETER = "'%s' 파라미터 값이 올바르지 않습니다. (허용된 값: %s)";
     private static final String INVALID_PARAMETER_FORMAT = "'%s' 파라미터의 형식이 올바르지 않습니다.";
@@ -28,6 +33,11 @@ public class GlobalExceptionHandler {
 
         // 서버 로그 남기기
         log.error("비즈니스 예외 발생 : code={}, message={}, path={}", code.getCode(), code.getMessage(), request.getRequestURI());
+
+        // 디스코드 웹훅으로 알림 전송 (500 에러일 경우)
+        if (code.getHttpStatus().is5xxServerError()) {
+            discordWebhookService.sendAlert(code, e.getMessage(), request.getRequestURI());
+        }
 
         // 응답 생성
         ErrorResponse response;

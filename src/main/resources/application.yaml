@@ -50,3 +50,8 @@ server:
 backup:
     scheduler:
         interval: 10000000 # 1시간, ms 기준, 시간은 테스트 중이므로 변동 사항있음
+
+# 5. discord
+discord:
+    webhook:
+        url: "https://discord.com/api/webhooks/1464525247683498068/ynJQTs8MLY-_eKYjTgpqtkArQzUTSgBxDpoObNak2AWSqLaK9WBNbuAy6vsapulYDCv5"
