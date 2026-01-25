@@ -1,19 +1,14 @@
 package com.sprint.mission.sb8hrbankteamquerity.repository;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
-import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
-import java.util.List;
-
 
 public interface EmployeeHistoryRepository extends JpaRepository<EmployeeHistory, Long> {
     //가장 최근에 배치가 완료된 시간 이후 직원 데이터가 변경이 있을 경우
@@ -39,6 +34,5 @@ public interface EmployeeHistoryRepository extends JpaRepository<EmployeeHistory
         @Param("atTo") Instant atTo,
         Pageable pageable
     );
-
 
 }
