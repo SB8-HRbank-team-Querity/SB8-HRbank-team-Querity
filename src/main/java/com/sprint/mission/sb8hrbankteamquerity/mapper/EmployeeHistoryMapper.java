@@ -35,6 +35,10 @@ public interface EmployeeHistoryMapper {
 
     EmployeeHistory toEntity(EmployeeHistorySaveRequest save);
 
+//    @Mapping(target = "id", source = "id")
+//    EmployeeHistory toEntityChange(ChangeLogDto dto);
+
+
     default Map<String, DiffDto> toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto) {
         Map<String, DiffDto> diffDto = new HashMap<>();
 

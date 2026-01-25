@@ -22,7 +22,7 @@ public class EmployeeHistory extends BaseEntity {
     @Column(name = "type")
     private EmployeeHistoryType type;
 
-    @Column(name = "memo", nullable = false)
+    @Column(name = "memo", columnDefinition = "text", nullable = false)
     private String memo;
 
     @Column(name = "ip_address", nullable = false, length = 200)

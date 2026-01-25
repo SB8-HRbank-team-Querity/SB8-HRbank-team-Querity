@@ -4,16 +4,26 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDeta
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
+import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -46,13 +56,36 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
 
     @Override
     public List<ChangeLogDto> getAllEmployeeHistory(
-        @RequestParam EmployeeHistoryFilter filter
+            EmployeeHistoryFilter filter
         ) {
-        List<ChangeLogDto> changeLogDtoList =
-            employeeHistoryRepository.findAll().stream().
-                map(employeeHistoryMapper::toGetResponse).toList();
+        Instant from = filter.atFrom() == null ? null :
+            LocalDate.parse(filter.atFrom()).atStartOfDay().toInstant(ZoneOffset.UTC);
 
-        return changeLogDtoList;
+        Instant to = filter.atTo() == null ? null :
+            LocalDate.parse(filter.atTo()).atStartOfDay().toInstant(ZoneOffset.UTC);
+
+        String employeeNumber =
+            (filter.employeeNumber() == null || filter.employeeNumber().isBlank()) ? null : filter.employeeNumber();
+
+        String memo =
+            (filter.memo() == null || filter.memo().isBlank()) ? null : filter.memo();
+
+        String ipAddress =
+            (filter.ipAddress() == null || filter.ipAddress().isBlank()) ? null : filter.ipAddress();
+
+        String sortField = filter.sortField() == null ? "id" : filter.sortField();
+        Sort.Direction direction = "desc".equalsIgnoreCase(filter.direction().toString()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortField);
+
+        Pageable pageable = PageRequest.of(0, 21, sort);
+
+        // 조회
+        Page<EmployeeHistory> employeeHistoryList = employeeHistoryRepository.findAllFilter(
+            filter.idAfter(), employeeNumber, filter.type(),  memo, ipAddress, from, to, pageable);
+
+        List<ChangeLogDto> changeLogDtoList = employeeHistoryList.stream().map(employeeHistoryMapper::toGetResponse).toList();
+
+        return employeeHistoryList.map(employeeHistoryMapper::toGetResponse).getContent();
     }
 
     @Override

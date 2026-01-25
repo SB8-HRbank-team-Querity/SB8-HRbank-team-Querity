@@ -121,39 +121,39 @@ VALUES ('홍길동', 'gildong@company.com', 'EMP202001', '팀장', '2020-01-01',
        ('한가인', 'gain@company.com', 'EMP202302', '팀장', '2023-03-01', 'ACTIVE', 6, NULL, NOW(), NOW()),
        ('송강호', 'gh.song@company.com', 'EMP202303', '과장', '2023-09-15', 'ACTIVE', 6, NULL, NOW(), NOW());
 
-INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
-VALUES ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-    "dept": "인사팀"
-}', '홍길동', 'EMP202001'),
-       ('UPDATED', '직급 변경 (사원->대리)', '192.168.0.15', NOW(), '{
-           "pos_old": "사원",
-           "pos_new": "대리"
-       }', '김철수', 'EMP202002'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "개발1팀"
-       }', '이영희', 'EMP202003'),
-       ('UPDATED', '개인 이메일 수정', '211.234.12.5', NOW(), '{
-           "email": "changed@co.com"
-       }', '박지민', 'EMP202101'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "개발1팀"
-       }', '최준호', 'EMP202102'),
-       ('UPDATED', '휴직 처리 (육아휴직)', '10.0.5.21', NOW(), '{
-           "status": "ON_LEAVE"
-       }', '윤도현', 'EMP202202'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "디자인팀"
-       }', '강미나', 'EMP202201'),
-       ('DELETED', '퇴사 처리', '192.168.0.10', NOW(), '{
-           "reason": "개인사유"
-       }', '퇴사자A', 'EMP999999'),
-       ('UPDATED', '부서 이동', '10.0.5.21', NOW(), '{
-           "dept_old": 1,
-           "dept_new": 6
-       }', '한가인', 'EMP202302'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "영업팀"
-       }', '송강호', 'EMP202303');
+-- INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
+-- VALUES ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+--     "dept": "인사팀"
+-- }', '홍길동', 'EMP202001'),
+--        ('UPDATED', '직급 변경 (사원->대리)', '192.168.0.15', NOW(), '{
+--            "pos_old": "사원",
+--            "pos_new": "대리"
+--        }', '김철수', 'EMP202002'),
+--        ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+--            "dept": "개발1팀"
+--        }', '이영희', 'EMP202003'),
+--        ('UPDATED', '개인 이메일 수정', '211.234.12.5', NOW(), '{
+--            "email": "changed@co.com"
+--        }', '박지민', 'EMP202101'),
+--        ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+--            "dept": "개발1팀"
+--        }', '최준호', 'EMP202102'),
+--        ('UPDATED', '휴직 처리 (육아휴직)', '10.0.5.21', NOW(), '{
+--            "status": "ON_LEAVE"
+--        }', '윤도현', 'EMP202202'),
+--        ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+--            "dept": "디자인팀"
+--        }', '강미나', 'EMP202201'),
+--        ('DELETED', '퇴사 처리', '192.168.0.10', NOW(), '{
+--            "reason": "개인사유"
+--        }', '퇴사자A', 'EMP999999'),
+--        ('UPDATED', '부서 이동', '10.0.5.21', NOW(), '{
+--            "dept_old": 1,
+--            "dept_new": 6
+--        }', '한가인', 'EMP202302'),
+--        ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
+--            "dept": "영업팀"
+--        }', '송강호', 'EMP202303');
 
 INSERT INTO backup_history (worker, started_at, ended_at, status, created_at, file_id)
 VALUES ('Admin_Sys', NOW() - INTERVAL '2 days', NOW() - INTERVAL '115 minutes', 'COMPLETED', NOW(), 6),
@@ -177,3 +177,97 @@ SELECT *
 FROM file_meta;
 SELECT *
 FROM backup_history;
+
+SELECT
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_name = 'employee_history';
+
+-- Insert 하기 전에 한번 해주세요, 하고 나면 시작 id는 11인가 12일 겁니다.
+-- DELETE FROM employee_history;
+
+-- dto 사용이 변경되면서 필요한 데이터도 조금 변경되었습니다.
+INSERT INTO employee_history
+(type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
+VALUES
+    ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(),
+     '{
+         "departmentName": {
+             "before": null,
+             "after": "인사팀"
+         }
+     }',
+     '홍길동', 'EMP202001'),
+    ('UPDATED', '직급 변경 (사원 → 대리)', '192.168.0.15', NOW(),
+     '{
+         "position": {
+             "before": "사원",
+             "after": "대리"
+         }
+     }',
+     '김철수', 'EMP202002'),
+    ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(),
+     '{
+         "departmentName": {
+             "before": null,
+             "after": "개발1팀"
+         }
+     }',
+     '이영희', 'EMP202003'),
+    ('UPDATED', '개인 이메일 수정', '211.234.12.5', NOW(),
+     '{
+         "email": {
+             "before": "old@company.com",
+             "after": "changed@co.com"
+         }
+     }',
+     '박지민', 'EMP202101'),
+    ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(),
+     '{
+         "departmentName": {
+             "before": null,
+             "after": "개발1팀"
+         }
+     }',
+     '최준호', 'EMP202102'),
+    ('UPDATED', '휴직 처리 (육아휴직)', '10.0.5.21', NOW(),
+     '{
+         "status": {
+             "before": "ACTIVE",
+             "after": "ON_LEAVE"
+         }
+     }',
+     '윤도현', 'EMP202202'),
+    ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(),
+     '{
+         "departmentName": {
+             "before": null,
+             "after": "디자인팀"
+         }
+     }',
+     '강미나', 'EMP202201'),
+    ('DELETED', '퇴사 처리', '192.168.0.10', NOW(),
+     '{
+         "status": {
+             "before": "ACTIVE",
+             "after": null
+         }
+     }',
+     '퇴사자A', 'EMP999999'),
+    ('UPDATED', '부서 이동', '10.0.5.21', NOW(),
+     '{
+         "departmentName": {
+             "before": "영업팀",
+             "after": "기획팀"
+         }
+     }',
+     '한가인', 'EMP202302'),
+    ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(),
+     '{
+         "departmentName": {
+             "before": null,
+             "after": "영업팀"
+         }
+     }',
+     '송강호', 'EMP202303');

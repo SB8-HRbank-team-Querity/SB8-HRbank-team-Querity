@@ -2,18 +2,26 @@ package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.EmployeeDto;
+import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryDiffRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @RestController
@@ -40,13 +48,15 @@ public class EmployeeHistoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistoryById() {
-//        List<ChangeLogDto> employeeHistoryDTOList =
-//            employeeHistoryService.getAllEmployeeHistory();
-//
-//        return ResponseEntity.ok(employeeHistoryDTOList);
-//    }
+    @GetMapping
+    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistoryById(
+        @ModelAttribute  EmployeeHistoryFilter filter
+    ) {
+        List<ChangeLogDto> employeeHistoryDTOList =
+            employeeHistoryService.getAllEmployeeHistory(filter);
+
+        return ResponseEntity.ok(employeeHistoryDTOList);
+    }
 
     @GetMapping("/{employeeHistoryId}")
     public ResponseEntity<ChangeLogDetailDto> getEmployeeHistoryById(
