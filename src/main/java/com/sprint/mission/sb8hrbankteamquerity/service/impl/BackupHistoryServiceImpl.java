@@ -333,14 +333,13 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             int size = 1000;
 
             while (true) {
-                Page<Employee> employeePage = employeeRepository.findAllWithDepartment(PageRequest.of(page, size));
+                PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+                Page<Employee> employeePage = employeeRepository.findAllWithDepartment(pageRequest);
                 List<Employee> employees = employeePage.getContent();
 
                 if (employees.isEmpty()) break;
 
                 for (Employee e : employees) {
-                    //수정 필
-                    LocalDate localDate = e.getHireDate().atZone(ZoneId.systemDefault()).toLocalDate();
                     String departmentName = e.getDepartmentId() != null ? e.getDepartmentId().getName() : "";
 
                     String line = String.format("%d,%s,%s,%s,%s,%s,%s,%s",
@@ -350,7 +349,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                         e.getEmail(),
                         departmentName,
                         e.getPosition(),
-                        localDate,
+                        e.getHireDate(),
                         e.getStatus()
                     );
                     writer.write(line);
