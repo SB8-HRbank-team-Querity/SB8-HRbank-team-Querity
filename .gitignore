@@ -47,5 +47,4 @@ Desktop.ini
 
 ### Querydsl / Generated ###
 /build/generated/
-/target/generated-sources/
-/bin/generated/
+src/main/generated/
