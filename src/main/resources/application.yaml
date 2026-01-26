@@ -17,7 +17,7 @@ spring:
       connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
   # JPA 설정
   jpa:
-    generate-ddl: false
+    generate-ddl: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
