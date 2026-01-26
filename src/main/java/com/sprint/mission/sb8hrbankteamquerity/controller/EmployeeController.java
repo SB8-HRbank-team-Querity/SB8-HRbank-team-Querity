@@ -2,7 +2,6 @@ package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.controller.docs.EmployeeApi;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
-import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ public class EmployeeController implements EmployeeApi {
 
     private final EmployeeService employeeService;
     private final FileStorageService fileStorageService;
-    private final FileRepository fileRepository;
 
     @GetMapping
     public ResponseEntity<EmployeePageResponse> findAll(@ParameterObject EmployeeSearchDto Dto) {

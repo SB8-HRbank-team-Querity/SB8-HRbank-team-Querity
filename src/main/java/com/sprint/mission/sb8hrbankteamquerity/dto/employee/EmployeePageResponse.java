@@ -7,7 +7,7 @@ public record EmployeePageResponse(
     String nextCursor,
     Long nextIdAfter,
     Integer size,
-    Integer totalElements,
+    Long totalElements,
     boolean hasNext
 ) {
 }
