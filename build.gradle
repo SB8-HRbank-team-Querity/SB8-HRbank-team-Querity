@@ -85,4 +85,5 @@ tasks.named('bootJar') {
 }
 tasks.build {
     dependsOn tasks.bootJar
+
 }
