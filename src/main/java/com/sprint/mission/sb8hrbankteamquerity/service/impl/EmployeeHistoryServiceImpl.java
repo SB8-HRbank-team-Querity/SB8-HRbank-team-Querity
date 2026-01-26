@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Slice;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,30 +52,35 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         );
     }
 
+
     @Override
     public List<ChangeLogDto> getAllEmployeeHistory(EmployeeHistoryFilter filter) {
 
-        // 기본 정렬 기준, id
-        String sortField = filter.sortField() == null ? "id" : filter.sortField();
+        int size = filter.size() != null && filter.size() > 0
+            ? filter.size() : 10;
 
+        // 기본 정렬 기준, iP
+        String sortField = filter.sortField() == null ? "ip" : filter.sortField();
         // 기본 출력 순서, 내림차순
         String direc = filter.direction() == null ? "desc" : filter.direction().toString();
 
         Sort.Direction direction = "desc".equalsIgnoreCase(direc) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
         Sort sort = Sort.by(direction, sortField);
 
-        Pageable pageable = PageRequest.of(0, 20, sort);
+        Pageable pageable = PageRequest.of(0, size+1, sort);
 
-        Page<EmployeeHistory> employeeHistoryList =
+        Slice<EmployeeHistory> slice =
             employeeHistoryRepository.findAll(
                 EmployeeHistorySpecification.filter(filter),
                 pageable
             );
 
-        boolean hasNext = employeeHistoryList.getTotalElements() > 20;
-
-        return employeeHistoryList.map(employeeHistoryMapper::toGetResponse).getContent();
+        return slice
+            .map(employeeHistoryMapper::toGetResponse)
+            .getContent();
     }
+
 
     @Override
     public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
@@ -96,40 +102,34 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
             end = Instant.now();
             start = end.minus(7, ChronoUnit.DAYS);
 
+        } else if ((fromDate == null && toDate != null)
+            || (fromDate != null && toDate == null)) {
             // 날짜를 하나만 입력 했을 경우 1, 그날 하루치만 나오게
-        } else if (fromDate == null && toDate != null) {
-            start = LocalDate.parse(toDate)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
 
-            end = LocalDate.parse(toDate)
-                .plusDays(1)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
+            String day = fromDate == null ? toDate : fromDate;
 
-            // 날짜를 하나만 입력 했을 경우 2. 그날 하루치만 나오게
-        } else if (fromDate != null && toDate == null) {
-            start = LocalDate.parse(fromDate)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
+            start = parsingStratDate(day);
+            end = parsingEndDate(day);
 
-            end = LocalDate.parse(fromDate)
-                .plusDays(1)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
-
-            // 날짜를 2개 입력 했을 경우
         } else {
-            start = LocalDate.parse(fromDate)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
-
-            end = LocalDate.parse(toDate)
-                .plusDays(1)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
+            // 2개를 입력 했을 경우
+            start = parsingStratDate(fromDate);
+            end = parsingEndDate(toDate);
         }
 
         return employeeHistoryRepository.countEmployeeHistoryByCreatedAtBetween(start, end);
+    }
+
+    private Instant parsingEndDate(String date) {
+        return LocalDate.parse(date)
+            .plusDays(1)
+            .atStartOfDay()
+            .toInstant(ZoneOffset.UTC);
+    }
+
+    private Instant parsingStratDate(String date) {
+        return LocalDate.parse(date)
+            .atStartOfDay()
+            .toInstant(ZoneOffset.UTC);
     }
 }

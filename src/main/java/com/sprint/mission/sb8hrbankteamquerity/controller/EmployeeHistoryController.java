@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
+import com.sprint.mission.sb8hrbankteamquerity.controller.docs.EmployeeHistoryApi;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
@@ -14,11 +15,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/change-logs")
-public class EmployeeHistoryController {
+public class EmployeeHistoryController implements EmployeeHistoryApi {
     private final EmployeeHistoryService employeeHistoryService;
 
     @GetMapping
-    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistoryById(
+    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistory(
         @ModelAttribute EmployeeHistoryFilter filter
     ) {
         List<ChangeLogDto> employeeHistoryDTOList =

@@ -14,8 +14,8 @@ public record EmployeeHistoryFilter(
     String ipAddress,
     String atFrom,
     String atTo,
-    String sortField, // 기본은 id로
+    String sortField, // 기본은 ip로
     sortType direction, // 기본은 desc로
-    Long idAfter
+    Integer size
 ) {
 }

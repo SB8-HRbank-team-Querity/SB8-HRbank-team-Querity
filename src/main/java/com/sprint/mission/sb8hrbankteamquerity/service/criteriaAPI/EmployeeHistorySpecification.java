@@ -17,10 +17,6 @@ public class EmployeeHistorySpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.idAfter() != null) {
-                predicates.add(cb.greaterThan(root.get("id"), filter.idAfter()));
-            }
-
             if (filter.type() != null) {
                 predicates.add(cb.equal(root.get("type"), filter.type()));
             }
