@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.LocalDate;
 import java.util.Random;
 
 @Entity
@@ -30,7 +29,7 @@ public class Employee extends BaseUpdatableEntity {
     private String position;
 
     @Column(name = "hire_date", length = 100, nullable = false)
-    private Instant hireDate;
+    private LocalDate hireDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50, nullable = false)
@@ -43,7 +42,7 @@ public class Employee extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_image_id")
     private Long profileImageId;
 
-    public Employee(String name, String email, String employeeNumber, Department departmentId, String position, Instant hireDate, EmployeeStatus status, Long profileImageId) {
+    public Employee(String name, String email, String employeeNumber, Department departmentId, String position, LocalDate hireDate, EmployeeStatus status, Long profileImageId) {
         this.name = name;
         this.email = email;
         this.employeeNumber = employeeNumber;
@@ -54,44 +53,44 @@ public class Employee extends BaseUpdatableEntity {
         this.profileImageId = profileImageId;
     }
 
-    public void update(String name, String email, Department departmentId, String position, Instant hireDate, EmployeeStatus status, Long profileImageId) {
-        if(name != null) {
+    public void update(String name, String email, Department departmentId, String position, LocalDate hireDate, EmployeeStatus status, Long profileImageId) {
+        if (name != null) {
             this.name = name;
         }
-        if(email != null) {
+        if (email != null) {
             this.email = email;
         }
-        if(departmentId != null) {
+        if (departmentId != null) {
             this.departmentId = departmentId;
         }
-        if(position != null) {
+        if (position != null) {
             this.position = position;
         }
-        if(hireDate != null) {
+        if (hireDate != null) {
             this.hireDate = hireDate;
         }
-        if(status != null) {
+        if (status != null) {
             this.status = status;
         }
-        if(profileImageId != null) {
+        if (profileImageId != null) {
             this.profileImageId = profileImageId;
         }
     }
 
-    public static Employee create(String name, String email, Department departmentId, String position, Instant hireDate) {
+    public static Employee create(String name, String email, Department departmentId, String position, LocalDate hireDate) {
         String employeeNumber = createEmployeeNumber(hireDate);
         EmployeeStatus status = EmployeeStatus.ACTIVE;
         return new Employee(name, email, employeeNumber, departmentId, position, hireDate, status, null);
     }
 
-    public static Employee createProfile(String name, String email, Department departmentId, String position, Instant hireDate, Long profileImageId) {
+    public static Employee createProfile(String name, String email, Department departmentId, String position, LocalDate hireDate, Long profileImageId) {
         String employeeNumber = createEmployeeNumber(hireDate);
         EmployeeStatus status = EmployeeStatus.ACTIVE;
         return new Employee(name, email, employeeNumber, departmentId, position, hireDate, status, profileImageId);
     }
 
-    private static String createEmployeeNumber(Instant hireDate) {
-        int year = hireDate.atZone(ZoneId.systemDefault()).getYear();
+    private static String createEmployeeNumber(LocalDate hireDate) {
+        int year = hireDate.getYear();
         int random = new Random().nextInt(9000) + 1000;
         return String.format("EMP-%d-%d", year, random);
     }

@@ -11,7 +11,7 @@ import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.DepartmentMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +32,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentDto create(DepartmentCreateRequest departmentCreateRequest) {
         String name = departmentCreateRequest.name();
         String description = departmentCreateRequest.description();
-        Instant establishedDate = departmentCreateRequest.establishedDate();
+        LocalDate establishedDate = departmentCreateRequest.establishedDate();
 
         // 부서 이름이 중복일 경우
         if (departmentRepository.existsByName(name)) {
@@ -55,7 +55,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         String newName = departmentUpdateRequest.name();
         String newDescription = departmentUpdateRequest.description();
-        Instant newEstablishedDate = departmentUpdateRequest.establishedDate();
+        LocalDate newEstablishedDate = departmentUpdateRequest.establishedDate();
 
         // 바꾸려는 부서의 이름이 이미 존재하는 경우 오류 처리
         if (!department.getName().equals(newName) && departmentRepository.existsByName(newName)) {
@@ -87,7 +87,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         boolean isAsc = !"desc".equalsIgnoreCase(departmentPageRequest.sortDirection());
 
         String lastValue = null;
-        Instant lastDateValue = null;
+        LocalDate lastDateValue = null;
         if (departmentPageRequest.idAfter() != null) {
             Department lastDept = departmentRepository.findById(departmentPageRequest.idAfter()).orElse(null);
             if (lastDept != null) {
