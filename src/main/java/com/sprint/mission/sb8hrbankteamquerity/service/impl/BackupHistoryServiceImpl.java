@@ -74,76 +74,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
     @Override
-    public BackupHistoryDto create(String worker) {
-
-        /*IP 주소
-         * 배치 시스템요청: sytsem
-         * 관리자 요청이면: 관리자IP
-         */
-        String workerIp = worker == null ? ipUtil.getClientIp() : worker;
-
-        Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
-
-        if (runningHistory.isPresent()) {
-            BackupHistory backupHistory = runningHistory.get();
-            writeFailureLogToFile(backupHistory, LOG_REASON_IN_PROGRESS, workerIp);
-
-            throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
-        }
-
-        Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
-            .orElse(Instant.EPOCH);
-
-        boolean needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt);
-
-        // 백업이 필요한 경우와 불필요한 경우 진행중인 상태는 유지되어야 함
-        BackupHistory backupHistory = savedinProgressHistory(workerIp);
-
-        // 백업이 불필요한 경우
-        if (!needBackup) {
-            return updatedSkippedHistory(backupHistory);
-        }
-
-        // 백업이 필요한 경우
-        Path tempPath = null;
-        try {
-            log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
-            String originalFileName = CSV_HEAD_NAME + "_" + convertFileName(backupHistory) + CSV_CONTENT_TYPE;
-
-            //임시 파일 생성 (OS의 임시 폴더에 생성됨)
-            //메모리에 저장하지 않고 디스크에 넣어서 사용
-            tempPath = Files.createTempFile(originalFileName, CSV_CONTENT_TYPE);
-            File tempFile = tempPath.toFile();
-
-            // CSV 쓰기
-            writeCsvToFile(tempFile);
-
-            FileMeta savedFileMeta = fileStorageService.save(tempFile, originalFileName, "text/csv");
-
-            updatedCompletedHistory(backupHistory, savedFileMeta);
-
-            log.info(">>> 백업 완료");
-
-        } catch (Exception e) {
-            log.error(">>> 백업 실패", e);
-
-            FileMeta errorLogFilefileMeta = writeFailureLogToFile(backupHistory, LOG_REASON_BAD_REQUEST, workerIp);
-            updatedFailureHistory(backupHistory, errorLogFilefileMeta);
-        } finally {
-            // 백업 성공 실패 상관 없이 임시 파일 삭제
-            if (tempPath != null) {
-                try {
-                    Files.deleteIfExists(tempPath);
-                } catch (IOException e) {
-                    log.warn("임시 파일 삭제 실패: {}", tempPath, e);
-                }
-            }
-        }
-
-        return backupHistoryMapper.toDto(backupHistory);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public CursorPageResponseBackupHistoryDto findAll(BackupHistoryPageRequest request) {
         // 공통 파라미터
@@ -268,6 +198,73 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     }
 
     @Override
+    public BackupHistoryDto create(String worker) {
+
+        /*IP 주소
+         * 배치 시스템요청: sytsem
+         * 관리자 요청이면: 관리자IP
+         */
+        String workerIp = worker == null ? ipUtil.getClientIp() : worker;
+
+        Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
+
+        if (runningHistory.isPresent()) {
+            BackupHistory backupHistory = runningHistory.get();
+            writeFailureLogToFile(backupHistory, LOG_REASON_IN_PROGRESS, workerIp);
+
+            throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
+        }
+
+        Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
+            .orElse(Instant.EPOCH);
+
+        boolean needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt);
+
+        // 백업이 필요한 경우와 불필요한 경우 진행중인 상태는 유지되어야 함
+        BackupHistory backupHistory = savedinProgressHistory(workerIp);
+
+        // 백업이 불필요한 경우
+        if (!needBackup) {
+            return updatedSkippedHistory(backupHistory);
+        }
+
+        // 백업이 필요한 경우
+        Path tempPath = null;
+        try {
+            log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
+            String originalFileName = CSV_HEAD_NAME + "_" + convertFileName(backupHistory) + CSV_CONTENT_TYPE;
+
+            //임시 파일 생성 (OS의 임시 폴더에 생성됨)
+            //메모리에 저장하지 않고 디스크에 넣어서 사용
+            tempPath = Files.createTempFile(originalFileName, CSV_CONTENT_TYPE);
+            File tempFile = tempPath.toFile();
+
+            // CSV 쓰기
+            writeCsvToFile(tempFile);
+            FileMeta savedFileMeta = fileStorageService.save(tempFile, originalFileName, "text/csv");
+
+            updatedCompletedHistory(backupHistory, savedFileMeta);
+
+            log.info(">>> 백업 완료");
+        } catch (Exception e) {
+            log.error(">>> 백업 실패", e);
+
+            FileMeta errorLogFilefileMeta = writeFailureLogToFile(backupHistory, LOG_REASON_BAD_REQUEST, workerIp);
+            updatedFailureHistory(backupHistory, errorLogFilefileMeta);
+        } finally {
+            // 백업 성공 실패 상관 없이 임시 파일 삭제
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException e) {
+                    log.warn("임시 파일 삭제 실패: {}", tempPath, e);
+                }
+            }
+        }
+        return backupHistoryMapper.toDto(backupHistory);
+    }
+
+    @Override
     public BackupHistoryDto findLatestByStatus(BackupHistoryStatus status) {
         return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(status)
             .map(backupHistoryMapper::toDto)
@@ -314,7 +311,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         // Instant -> ZoneId를 적용한 ZoneDateTime -> LocalDateTime
         // ZoneId.systemDefault - 한국 시간
         LocalDateTime ldt = LocalDateTime.ofInstant(backupHistory.getStartedAt(), ZoneId.systemDefault());
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
         return backupHistory.getId() + "_" + ldt.format(formatter);
@@ -398,7 +394,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 writer.newLine();
                 writer.write(LOG_STATUS + status);
             }
-
             savedFileMeta = fileStorageService.save(tempFile, fileName, "text/plain");
 
             log.info("에러 로그 파일 저장 완료");
@@ -414,7 +409,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 }
             }
         }
-
         return savedFileMeta;
     }
 }
