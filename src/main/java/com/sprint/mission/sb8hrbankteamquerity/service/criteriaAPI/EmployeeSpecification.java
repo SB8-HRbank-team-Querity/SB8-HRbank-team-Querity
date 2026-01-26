@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.service.Specification;
+package com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
