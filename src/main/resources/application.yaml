@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: local # 기본 프로파일 설정 (local 활성화)
   application:
     name: hrbank
   servlet:
