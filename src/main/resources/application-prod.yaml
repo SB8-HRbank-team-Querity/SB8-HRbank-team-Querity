@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    # Railway 환경 변수 사용 (개별 변수 조합, 더 안전함)
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 운영 환경에서는 스키마 변경 금지! (none 또는 update)
+    show-sql: false # 운영 환경에서는 SQL 로깅 최소화
+
+logging:
+  level:
+    org.hibernate.SQL: warn # 운영 환경에서는 SQL 로그 레벨을 warn 이상으로
+    org.hibernate.orm.jdbc.bind: warn
