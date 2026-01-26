@@ -1,11 +1,11 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.department;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record DepartmentCreateRequest(
     String name,
     String description,
-    Date establishedDate
+    LocalDate establishedDate
 ) {
 
 }

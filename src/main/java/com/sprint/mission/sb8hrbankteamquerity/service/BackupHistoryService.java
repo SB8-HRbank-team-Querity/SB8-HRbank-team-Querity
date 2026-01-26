@@ -1,15 +1,15 @@
 package com.sprint.mission.sb8hrbankteamquerity.service;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.BuckupHistory.BackupHistoryDto;
-
-import java.net.UnknownHostException;
-import java.util.List;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
+import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 
 public interface BackupHistoryService {
 
-    BackupHistoryDto create() throws UnknownHostException;
+    CursorPageResponseBackupHistoryDto findAll(BackupHistoryPageRequest request);
 
-    List<BackupHistoryDto> findAll();
+    BackupHistoryDto create(String worker);
 
-    List<BackupHistoryDto> findLatestByStatus();
+    BackupHistoryDto findLatestByStatus(BackupHistoryStatus status);
 }

@@ -1,14 +1,15 @@
 package com.sprint.mission.sb8hrbankteamquerity.service;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryGetResponse;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.*;
 
-import java.util.List;
+import java.time.Instant;
 
 public interface EmployeeHistoryService {
-    EmployeeHistoryGetResponse saveEmployeeHistory(EmployeeHistorySaveRequest employeeHistorySaveRequest);
-    List<EmployeeHistoryGetResponse> getAllEmployeeHistory();
-    EmployeeHistoryGetResponse getByIdEmployeeHistory(Long employeeHistoryId);
+    ChangeLogDto saveEmployeeHistory(EmployeeHistorySaveRequest employeeHistorySaveRequest);
+
+    CursorPageResponseChangeLogDto getAllEmployeeHistory(EmployeeHistoryFilter employeeHistoryFilter);
+
+    ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId);
+
+    Long getEmployeeHistoryCount(Instant fromDate, Instant toDate);
 }
