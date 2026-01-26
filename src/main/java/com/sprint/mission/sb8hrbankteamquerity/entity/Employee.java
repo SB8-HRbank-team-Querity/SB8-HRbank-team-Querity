@@ -1,3 +1,4 @@
+
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseUpdatableEntity;
@@ -28,7 +29,7 @@ public class Employee extends BaseUpdatableEntity {
     @Column(name = "position", length = 50, nullable = false)
     private String position;
 
-    @Column(name = "hire_date", length = 100, nullable = false)
+    @Column(name = "hire_date", nullable = false)
     private LocalDate hireDate;
 
     @Enumerated(EnumType.STRING)
@@ -96,5 +97,3 @@ public class Employee extends BaseUpdatableEntity {
     }
 
 }
-
-
