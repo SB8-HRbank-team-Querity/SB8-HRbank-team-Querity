@@ -81,14 +81,11 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         boolean hasNext = slice.hasNext();
 
         if (!slice.isEmpty()) {
-//            EmployeeHistory last = slice.get(slice.size() - 1);
             EmployeeHistory last = slice.getContent().get(slice.getTotalPages() - 1);
             nextCursor = last.getCreatedAt();
             nextIdAfter = last.getId().intValue(); // Integer wrapper
         }
-//        return slice
-//            .map(employeeHistoryMapper::toGetResponse)
-//            .getContent();
+
         return new CursorPageResponseChangeLogDto(
             changeLogDtoList,
             nextCursor != null ? nextCursor.toString() : null,
