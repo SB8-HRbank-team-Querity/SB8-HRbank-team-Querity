@@ -36,7 +36,6 @@ out/
 ### VS Code ###
 .vscode/
 
-
 ### Mac OS ###
 .DS_Store
 /uploads
@@ -45,3 +44,8 @@ out/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+### Querydsl / Generated ###
+/build/generated/
+/target/generated-sources/
+/bin/generated/

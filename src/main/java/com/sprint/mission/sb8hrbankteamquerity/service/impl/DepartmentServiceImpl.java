@@ -16,7 +16,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,41 +78,15 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponseDepartmentDto findAll(DepartmentPageRequest departmentPageRequest) {
-        // 데이터 조회
+        // 기본값 설멍 및 페이지네이션 준비
         int size = departmentPageRequest.size() != null && departmentPageRequest.size() > 0
             ? departmentPageRequest.size() : 10;
-        String sortField = departmentPageRequest.sortField() == null ? "establishedDate"
-            : departmentPageRequest.sortField();
-        boolean isAsc = !"desc".equalsIgnoreCase(departmentPageRequest.sortDirection());
 
-        String lastValue = null;
-        LocalDate lastDateValue = null;
-        if (departmentPageRequest.idAfter() != null) {
-            Department lastDept = departmentRepository.findById(departmentPageRequest.idAfter()).orElse(null);
-            if (lastDept != null) {
-                if ("name".equals(sortField)) {
-                    lastValue = lastDept.getName();
-                } else {
-                    lastDateValue = lastDept.getEstablishedDate();
-                }
-            }
-        }
+        // Pageable 객체 생성
+        Pageable pageable = PageRequest.of(0, size + 1);
 
-        // 정렬값이 같을 경우 id 오름차순 정렬
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortField).and(Sort.by(direction, "id"));
-
-        Pageable pageable = PageRequest.of(0, size + 1, sort);
-
-        List<Department> departments = departmentRepository.findAllByCursor(
-            departmentPageRequest.nameOrDescription() == null ? "" : departmentPageRequest.nameOrDescription(),
-            lastValue,
-            lastDateValue,
-            departmentPageRequest.idAfter(),
-            sortField,
-            isAsc,
-            pageable
-        );
+        // Repository 호출
+        List<Department> departments = departmentRepository.findAllByCursor(departmentPageRequest, pageable);
 
         // 다음 페이지 여부 확인
         // 조회된 데이터의 size가 한 페이지의 데이터 size보다 크다면 다음 데이터가 더 있다는 의미
@@ -127,10 +100,22 @@ public class DepartmentServiceImpl implements DepartmentService {
             hasNext ? departments.subList(0, size) : departments;
 
         // 다음 페이지를 위한 정보
-        Department lastItem =
-            (hasNext && !content.isEmpty()) ? content.get(content.size() - 1) : null;
-        Long nextIdAfter = (lastItem != null) ? lastItem.getId() : null;
-        String nextCursor = (lastItem != null) ? String.valueOf(lastItem.getId()) : null;
+        Long nextIdAfter = null;
+        String nextCursor = null;
+
+        if (!content.isEmpty()) {
+            Department lastItem = content.get(content.size() - 1);
+            nextIdAfter = lastItem.getId();
+
+            // 정렬 기준(sortField)에 따라 커서 문자열 생성
+            String sortField = departmentPageRequest.sortField();
+            if ("name".equals(sortField)) {
+                nextCursor = lastItem.getName();
+            } else {
+                // 기본값인 설립일인 경우 문자열로 변환
+                nextCursor = String.valueOf(lastItem.getEstablishedDate());
+            }
+        }
 
         // 전체 개수 조회
         long totalElements = departmentRepository.countByNameOrDescription(
