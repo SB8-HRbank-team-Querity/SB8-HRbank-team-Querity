@@ -44,7 +44,7 @@ logging:
 
     # 3. server config
 server:
-    port: ${PORT:8080}
+    port: 8080
 
 # 4. backup
 
