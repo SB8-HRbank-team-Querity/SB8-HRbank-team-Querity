@@ -58,7 +58,10 @@ public class FileStorageServiceImpl implements FileStorageService {
         String originName = StringUtils.cleanPath(
             Objects.requireNonNull(file.getOriginalFilename()));
 
-        return saveInternal(file.getInputStream(), originName, file.getContentType(), file.getSize());
+        // try-with-resources로 스트림 자동 종료
+        try (InputStream inputStream = file.getInputStream()) {
+            return saveInternal(inputStream, originName, file.getContentType(), file.getSize());
+        }
     }
 
     @Override
