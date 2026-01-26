@@ -80,3 +80,9 @@ tasks.named('test') {
 bootJar {
     enabled = true
 }
+tasks.named('bootJar') {
+    archiveFileName.set('app.jar')
+}
+tasks.build {
+    dependsOn tasks.bootJar
+}
