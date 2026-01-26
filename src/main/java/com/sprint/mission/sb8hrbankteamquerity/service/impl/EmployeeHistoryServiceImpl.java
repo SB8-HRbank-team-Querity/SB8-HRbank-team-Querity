@@ -1,9 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
@@ -16,12 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Slice;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -54,33 +47,57 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
 
 
     @Override
-    public List<ChangeLogDto> getAllEmployeeHistory(EmployeeHistoryFilter filter) {
+    public CursorPageResponseChangeLogDto getAllEmployeeHistory(EmployeeHistoryFilter filter) {
 
-        int size = filter.size() != null && filter.size() > 0
-            ? filter.size() : 10;
+        int size = filter.size() != null && filter.size() > 0 ? filter.size() : 20;
 
         // 기본 정렬 기준, iP
-        String sortField = filter.sortField() == null ? "ip" : filter.sortField();
+        String sortField = filter.sortField() == null ? "ipAddress" : filter.sortField();
+
+        if (sortField.equals("at")) {
+            sortField = "createdAt";
+        }
+
         // 기본 출력 순서, 내림차순
         String direc = filter.direction() == null ? "desc" : filter.direction().toString();
 
         Sort.Direction direction = "desc".equalsIgnoreCase(direc) ? Sort.Direction.DESC : Sort.Direction.ASC;
-
         Sort sort = Sort.by(direction, sortField);
 
-        Pageable pageable = PageRequest.of(0, size+1, sort);
+        Pageable pageable = PageRequest.of(0, size + 1, sort);
 
-        Slice<EmployeeHistory> slice =
+        Page<EmployeeHistory> slice =
             employeeHistoryRepository.findAll(
                 EmployeeHistorySpecification.filter(filter),
                 pageable
             );
 
-        return slice
+        List<ChangeLogDto> changeLogDtoList = slice.stream()
             .map(employeeHistoryMapper::toGetResponse)
-            .getContent();
-    }
+            .toList();
 
+        Instant nextCursor = null;
+        Integer nextIdAfter = null;
+        boolean hasNext = slice.hasNext();
+
+        if (!slice.isEmpty()) {
+//            EmployeeHistory last = slice.get(slice.size() - 1);
+            EmployeeHistory last = slice.getContent().get(slice.getTotalPages() - 1);
+            nextCursor = last.getCreatedAt();
+            nextIdAfter = last.getId().intValue(); // Integer wrapper
+        }
+//        return slice
+//            .map(employeeHistoryMapper::toGetResponse)
+//            .getContent();
+        return new CursorPageResponseChangeLogDto(
+            changeLogDtoList,
+            nextCursor != null ? nextCursor.toString() : null,
+            nextIdAfter,
+            size,
+            changeLogDtoList.size(), // cursor 방식에서는 보통 현재 페이지 size만 제공
+            hasNext
+        );
+    }
 
     @Override
     public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
@@ -92,7 +109,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     }
 
     @Override
-    public Long getEmployeeHistoryCount(String fromDate, String toDate) {
+    public Long getEmployeeHistoryCount(Instant fromDate, Instant toDate) {
 
         Instant end = null;
         Instant start = null;
@@ -106,30 +123,17 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
             || (fromDate != null && toDate == null)) {
             // 날짜를 하나만 입력 했을 경우 1, 그날 하루치만 나오게
 
-            String day = fromDate == null ? toDate : fromDate;
+            Instant day = fromDate == null ? toDate : fromDate;
 
-            start = parsingStratDate(day);
-            end = parsingEndDate(day);
+            start = day;
+            end = day;
 
         } else {
             // 2개를 입력 했을 경우
-            start = parsingStratDate(fromDate);
-            end = parsingEndDate(toDate);
+            start = fromDate;
+            end = toDate;
         }
 
         return employeeHistoryRepository.countEmployeeHistoryByCreatedAtBetween(start, end);
-    }
-
-    private Instant parsingEndDate(String date) {
-        return LocalDate.parse(date)
-            .plusDays(1)
-            .atStartOfDay()
-            .toInstant(ZoneOffset.UTC);
-    }
-
-    private Instant parsingStratDate(String date) {
-        return LocalDate.parse(date)
-            .atStartOfDay()
-            .toInstant(ZoneOffset.UTC);
     }
 }

@@ -2,6 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.controller.docs;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.CursorPageResponseChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface EmployeeHistoryApi {
@@ -30,7 +32,7 @@ public interface EmployeeHistoryApi {
         @ApiResponse(responseCode = "500", description = "서버 오류",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<List<ChangeLogDto>> getEmployeeHistory(
+    ResponseEntity<CursorPageResponseChangeLogDto> getEmployeeHistory(
         @ModelAttribute EmployeeHistoryFilter filter
     );
 
@@ -65,7 +67,7 @@ public interface EmployeeHistoryApi {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<Long> getEmployeeHistoryCount(
-        @RequestParam(required = false) String fromDate,
-        @RequestParam(required = false) String toDate
+        @RequestParam(required = false) Instant fromDate,
+        @RequestParam(required = false) Instant toDate
     );
 }

@@ -5,11 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 public interface EmployeeHistoryRepository extends JpaRepository<EmployeeHistory, Long>, JpaSpecificationExecutor<EmployeeHistory> {
     //가장 최근에 배치가 완료된 시간 이후 직원 데이터가 변경이 있을 경우
     boolean existsByCreatedAtGreaterThanEqual(Instant endedAt);
 
-    Long countEmployeeHistoryByCreatedAtBetween (Instant strat,Instant endedAt);
+    Long countEmployeeHistoryByCreatedAtBetween(Instant strat, Instant endedAt);
 }

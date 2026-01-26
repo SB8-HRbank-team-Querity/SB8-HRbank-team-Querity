@@ -8,7 +8,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Map;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,7 +30,7 @@ public class EmployeeHistory extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "changed_detail", nullable = false)
-    private Map<String, DiffDto> changed_detail;
+    private List<DiffDto> changed_detail;
 
     @Column(name = "employee_name", nullable = false, length = 50)
     private String employeeName;

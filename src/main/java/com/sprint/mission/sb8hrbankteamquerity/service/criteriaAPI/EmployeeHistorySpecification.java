@@ -5,9 +5,6 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +19,7 @@ public class EmployeeHistorySpecification {
             }
 
             if (filter.employeeNumber() != null && !filter.employeeNumber().isBlank()) {
-                predicates.add(
-                    cb.like(
+                predicates.add(cb.like(
                         cb.lower(root.get("employeeNumber")),
                         "%" + filter.employeeNumber().toLowerCase() + "%"
                     )
@@ -31,8 +27,7 @@ public class EmployeeHistorySpecification {
             }
 
             if (filter.memo() != null && !filter.memo().isBlank()) {
-                predicates.add(
-                    cb.like(
+                predicates.add(cb.like(
                         cb.lower(root.get("memo")),
                         "%" + filter.memo().toLowerCase() + "%"
                     )
@@ -40,8 +35,7 @@ public class EmployeeHistorySpecification {
             }
 
             if (filter.ipAddress() != null && !filter.ipAddress().isBlank()) {
-                predicates.add(
-                    cb.like(
+                predicates.add(cb.like(
                         cb.lower(root.get("ipAddress")),
                         "%" + filter.ipAddress().toLowerCase() + "%"
                     )
@@ -49,18 +43,28 @@ public class EmployeeHistorySpecification {
             }
 
             if (filter.atFrom() != null) {
-                Instant from = LocalDate.parse(filter.atFrom())
-                    .atStartOfDay()
-                    .toInstant(ZoneOffset.UTC);
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), from));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), filter.atFrom()));
             }
 
             if (filter.atTo() != null) {
-                Instant to = LocalDate.parse(filter.atTo())
-                    .plusDays(1)
-                    .atStartOfDay()
-                    .toInstant(ZoneOffset.UTC);
-                predicates.add(cb.lessThan(root.get("createdAt"), to));
+                predicates.add(cb.lessThan(root.get("createdAt"), filter.atTo()));
+            }
+
+            // Cursor 조건 (핵심)
+            if (filter.cursor() != null) {
+                Predicate older =
+                    cb.lessThan(root.get("createdAt"), filter.cursor());
+
+                if (filter.idAfter() != null) {
+                    Predicate sameTimeLowerId =
+                        cb.and(
+                            cb.equal(root.get("createdAt"), filter.idAfter()),
+                            cb.lessThan(root.get("id"), filter.idAfter())
+                        );
+                    predicates.add(cb.or(older, sameTimeLowerId));
+                } else {
+                    predicates.add(older);
+                }
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

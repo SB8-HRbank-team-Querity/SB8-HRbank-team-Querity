@@ -2,7 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.controller.docs.EmployeeHistoryApi;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.CursorPageResponseChangeLogDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.Instant;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,10 +19,10 @@ public class EmployeeHistoryController implements EmployeeHistoryApi {
     private final EmployeeHistoryService employeeHistoryService;
 
     @GetMapping
-    public ResponseEntity<List<ChangeLogDto>> getEmployeeHistory(
+    public ResponseEntity<CursorPageResponseChangeLogDto> getEmployeeHistory(
         @ModelAttribute EmployeeHistoryFilter filter
     ) {
-        List<ChangeLogDto> employeeHistoryDTOList =
+        CursorPageResponseChangeLogDto employeeHistoryDTOList =
             employeeHistoryService.getAllEmployeeHistory(filter);
 
         return ResponseEntity.ok(employeeHistoryDTOList);
@@ -40,11 +40,11 @@ public class EmployeeHistoryController implements EmployeeHistoryApi {
 
     @GetMapping("/count")
     public ResponseEntity<Long> getEmployeeHistoryCount(
-        @RequestParam(required = false) String fromDate,
-        @RequestParam(required = false) String toDate
-    ){
-        return  ResponseEntity.status(HttpStatus.OK).body(
-            employeeHistoryService.getEmployeeHistoryCount(fromDate,toDate)
+        @RequestParam(required = false) Instant fromDate,
+        @RequestParam(required = false) Instant toDate
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+            employeeHistoryService.getEmployeeHistoryCount(fromDate, toDate)
         );
     }
 }
