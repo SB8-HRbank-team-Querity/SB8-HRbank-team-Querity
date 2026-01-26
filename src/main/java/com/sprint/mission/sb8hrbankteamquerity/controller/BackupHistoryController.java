@@ -1,6 +1,8 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.service.BackupHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +24,15 @@ public class BackupHistoryController {
             .body(backupHistoryService.create(null));
     }
 
-    //    @GetMapping
-//    public ResponseEntity<List<BackupDto>> findAll() {
-//        return ResponseEntity
-//            .status(HttpStatus.OK)
-//            .body(backupHistoryService.findAll());
-//    }
-//
+    @GetMapping
+    public ResponseEntity<CursorPageResponseBackupHistoryDto> findAll(
+        @ModelAttribute BackupHistoryPageRequest request
+    ) {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(backupHistoryService.findAll(request));
+    }
+
     @GetMapping(path = "/latest")
     public ResponseEntity<BackupHistoryDto> findLatestByStatus(
         @RequestParam(value = "status", defaultValue = "COMPLETED") BackupHistoryStatus status

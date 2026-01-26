@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 public interface BackupHistoryMapper {
 
     @Mapping(target = "fileId", source = "fileMeta.id")
-    @Mapping(target = "status", expression = "java(backupHistory.getStatus().getDescription())")
+    @Mapping(target = "status", expression = "java(backupHistory.getStatus().name())")
     BackupHistoryDto toDto(BackupHistory backupHistory);
 
 }
