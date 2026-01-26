@@ -6,14 +6,14 @@ import java.time.Instant;
 import java.util.List;
 
 public record ChangeLogDetailDto(
-    Integer id,
+    Long  id,
     EmployeeHistoryType type,
     String employeeNumber,
     String memo,
     String ipAddress,
     Instant at,
     String employeeName,
-    Integer profileImageId,
+    Long  profileImageId,
     List<DiffDto> diffs
 ) {
 }

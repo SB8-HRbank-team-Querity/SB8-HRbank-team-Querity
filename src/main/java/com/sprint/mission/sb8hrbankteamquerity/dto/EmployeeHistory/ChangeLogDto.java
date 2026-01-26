@@ -5,7 +5,7 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 import java.time.Instant;
 
 public record ChangeLogDto(
-    Integer id,
+    Long  id,
     EmployeeHistoryType type,
     String employeeNumber,
     String memo,

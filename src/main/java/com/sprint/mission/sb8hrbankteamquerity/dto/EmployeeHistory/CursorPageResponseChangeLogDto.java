@@ -5,9 +5,9 @@ import java.util.List;
 public record CursorPageResponseChangeLogDto(
     List<ChangeLogDto> content,
     String nextCursor,
-    Integer nextIdAfter, // integer 64(null 값이 필요할 때는 Wrapper 클래스 사용)
+    Long  nextIdAfter,
     Integer size,
-    Integer totalElements, // integer 64(보통 0 이상, null이 아님)
+    Long totalElements,
     boolean hasNext
 ) {
 }

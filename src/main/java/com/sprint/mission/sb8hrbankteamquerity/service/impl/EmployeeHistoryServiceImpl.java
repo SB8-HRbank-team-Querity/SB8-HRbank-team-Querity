@@ -2,6 +2,8 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
+import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeHistoryErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
@@ -14,7 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -52,7 +54,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         int size = filter.size() != null && filter.size() > 0 ? filter.size() : 20;
 
         // 기본 정렬 기준, iP
-        String sortField = filter.sortField() == null ? "ipAddress" : filter.sortField();
+        String sortField = filter.sortField() == null ? "createdAt" : filter.sortField();
 
         if (sortField.equals("at")) {
             sortField = "createdAt";
@@ -77,13 +79,17 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
             .toList();
 
         Instant nextCursor = null;
-        Integer nextIdAfter = null;
+        Long nextIdAfter = null;
+
         boolean hasNext = slice.hasNext();
 
         if (!slice.isEmpty()) {
-            EmployeeHistory last = slice.getContent().get(slice.getTotalPages() - 1);
+            EmployeeHistory last = slice.getContent()
+                .get(Math.min(size, slice.getContent().size()) - 1);
+
+
             nextCursor = last.getCreatedAt();
-            nextIdAfter = last.getId().intValue(); // Integer wrapper
+            nextIdAfter = last.getId() ;
         }
 
         return new CursorPageResponseChangeLogDto(
@@ -91,7 +97,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
             nextCursor != null ? nextCursor.toString() : null,
             nextIdAfter,
             size,
-            changeLogDtoList.size(), // cursor 방식에서는 보통 현재 페이지 size만 제공
+            changeLogDtoList.stream().count(),
             hasNext
         );
     }
@@ -100,7 +106,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
-                orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
+                orElseThrow(() -> new BusinessException(EmployeeHistoryErrorCode.EMP_HISTORY_NOT_FOUND));
 
         return employeeHistoryMapper.toDetailResponse(employeeHistory);
     }
@@ -122,8 +128,14 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
 
             Instant day = fromDate == null ? toDate : fromDate;
 
-            start = day;
-            end = day;
+            start = LocalDate.parse(day.toString())
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+            end = LocalDate.parse(day.toString())
+                .plusDays(1)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
 
         } else {
             // 2개를 입력 했을 경우

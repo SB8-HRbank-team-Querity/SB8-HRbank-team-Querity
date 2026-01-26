@@ -58,7 +58,7 @@ public class EmployeeHistorySpecification {
                 if (filter.idAfter() != null) {
                     Predicate sameTimeLowerId =
                         cb.and(
-                            cb.equal(root.get("createdAt"), filter.idAfter()),
+                            cb.equal(root.get("createdAt"), filter.cursor()),
                             cb.lessThan(root.get("id"), filter.idAfter())
                         );
                     predicates.add(cb.or(older, sameTimeLowerId));
