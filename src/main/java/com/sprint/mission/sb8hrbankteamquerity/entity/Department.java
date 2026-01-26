@@ -5,7 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -25,18 +25,18 @@ public class Department extends BaseUpdatableEntity {
     private String description;
 
     @Column(name = "established_date", nullable = false)
-    private Instant establishedDate;
+    private LocalDate establishedDate;
 
     @OneToMany(mappedBy = "departmentId")
     private List<Employee> employees = new ArrayList<>();
 
-    public Department(String name, String description, Instant establishedDate) {
+    public Department(String name, String description, LocalDate establishedDate) {
         this.name = name;
         this.description = description;
         this.establishedDate = establishedDate;
     }
 
-    public void update(String newName, String newDescription, Instant newEstablishedDate) {
+    public void update(String newName, String newDescription, LocalDate newEstablishedDate) {
         if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
         }
