@@ -2,6 +2,8 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +43,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     private final BackupHistoryRepository backupHistoryRepository;
@@ -92,8 +97,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         boolean needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt);
 
-        //백업이 필요한 경우와 불필요한 경우 진행중인 상태는 유지되어야 함
-        //추후 상태 변경
+        // 백업이 필요한 경우와 불필요한 경우 진행중인 상태는 유지되어야 함
         BackupHistory backupHistory = savedinProgressHistory(workerIp);
 
         // 백업이 불필요한 경우
@@ -105,7 +109,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         Path tempPath = null;
         try {
             log.info(">>> 백업 작업 시작 (ID: {})", backupHistory.getId());
-            String originalFileName = CSV_HEAD_NAME + "_" + convertFileName(backupHistory);
+            String originalFileName = CSV_HEAD_NAME + "_" + convertFileName(backupHistory) + CSV_CONTENT_TYPE;
 
             //임시 파일 생성 (OS의 임시 폴더에 생성됨)
             //메모리에 저장하지 않고 디스크에 넣어서 사용
@@ -142,8 +146,126 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BackupHistoryDto> findAll() {
-        return List.of();
+    public CursorPageResponseBackupHistoryDto findAll(BackupHistoryPageRequest request) {
+        // 공통 파라미터
+        String worker = request.worker();
+        String workerPattern = (worker != null && !worker.isBlank()) ? "%" + worker + "%" : null;
+
+        Instant startedAtFrom = request.startedAtFrom();
+        Instant startedAtTo = request.startedAtTo();
+
+        BackupHistoryStatus statusFilter = request.status();
+        int size = request.size();
+
+        // 기본 설정 값 startedAt DESC
+        String sortField = (request.sortField() == null || request.sortField().isBlank()) ? "startedAt" : request.sortField();
+        String sortDirectionStr = (request.sortDirection() == null || request.sortDirection().isBlank()) ? "DESC" : request.sortDirection();
+
+        if (!"ASC".equalsIgnoreCase(sortDirectionStr) && !"DESC".equalsIgnoreCase(sortDirectionStr)) {
+            throw new BusinessException(BackupHistoryErrorCode.BACKUP_PARAMETER_BAD_REQUEST);
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirectionStr);
+
+        boolean isAsc = direction.isAscending();
+
+        // "id"를 넣은 이유는 동시대간이 나올 때 "id"로 판단하기 위함
+        Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField, "id"));
+
+        Long cursorId = (request.idAfter() != null) ? request.idAfter().longValue() : null;
+
+        List<BackupHistory> backupHistoryList;
+
+        // 종료 시간 기준 정렬
+        if ("endedAt".equals(sortField)) {
+            Instant cursorTime = null;
+            if (request.cursor() != null && !request.cursor().isBlank()) {
+                try {
+                    cursorTime = Instant.parse(request.cursor());
+                } catch (Exception e) {
+                }
+            }
+
+            if (isAsc) {
+                backupHistoryList = backupHistoryRepository.findAllByEndedAtAsc(
+                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
+            } else {
+                backupHistoryList = backupHistoryRepository.findAllByEndedAtDesc(
+                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
+            }
+        }
+        // 상태 기준 정렬
+        else if ("status".equals(sortField)) {
+            BackupHistoryStatus cursorStatus = null;
+            if (request.cursor() != null && !request.cursor().isBlank()) {
+                try {
+                    cursorStatus = BackupHistoryStatus.valueOf(request.cursor());
+                } catch (Exception e) {
+                }
+            }
+
+            if (isAsc) {
+                backupHistoryList = backupHistoryRepository.findAllByStatusAsc(
+                    cursorStatus, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
+            } else {
+                backupHistoryList = backupHistoryRepository.findAllByStatusDesc(
+                    cursorStatus, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
+            }
+        }
+        // 시작 시간 기준 정렬
+        else {
+            Instant cursorTime = null;
+            if (request.cursor() != null && !request.cursor().isBlank()) {
+                try {
+                    cursorTime = Instant.parse(request.cursor());
+                } catch (Exception e) {
+                }
+            }
+
+            if (isAsc) {
+                backupHistoryList = backupHistoryRepository.findAllByStartedAtAsc(
+                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
+            } else {
+                backupHistoryList = backupHistoryRepository.findAllByStartedAtDesc(
+                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
+            }
+        }
+
+        // Slice
+        boolean hasNext = false;
+        if (backupHistoryList.size() > size) {
+            hasNext = true;
+            backupHistoryList.remove(backupHistoryList.size() - 1);
+        }
+
+        List<BackupHistoryDto> backupHistoryDtoList = backupHistoryList.stream()
+            .map(backupHistoryMapper::toDto)
+            .toList();
+
+        String nextCursor = null;
+        Long nextIdAfter = null;
+
+        if (!backupHistoryDtoList.isEmpty()) {
+            BackupHistoryDto lastBackupHistoryDto = backupHistoryDtoList.get(backupHistoryDtoList.size() - 1);
+            nextIdAfter = lastBackupHistoryDto.id();
+
+            if ("endedAt".equals(sortField)) {
+                nextCursor = (lastBackupHistoryDto.endedAt() != null) ? lastBackupHistoryDto.endedAt() : null;
+            } else if ("status".equals(sortField)) {
+                nextCursor = lastBackupHistoryDto.status();
+            } else {
+                nextCursor = lastBackupHistoryDto.startedAt();
+            }
+        }
+
+        return new CursorPageResponseBackupHistoryDto(
+            backupHistoryDtoList,
+            nextCursor,
+            nextIdAfter,
+            size,
+            null,
+            hasNext
+        );
     }
 
     @Override
@@ -153,32 +275,32 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             .orElse(null);
     }
 
-    //스탭 단위로 트랜잭션을 나눔
+    // 스탭 단위로 트랜잭션을 나눔
 
-    //백업 스킵
+    // 백업 스킵
     @Transactional
     protected BackupHistoryDto updatedSkippedHistory(BackupHistory backupHistory) {
         backupHistory.skip();
         return backupHistoryMapper.toDto(backupHistoryRepository.save(backupHistory));
     }
 
-    //백업 진행중
-    //메서드가 호출되자마자 독립적인 트랜잭션을 생성, 끝나면 즉시 DB에 진행중 삽입
-    //CSV 파일을 만드는 동안 "진행중"
+    // 백업 진행중
+    // 메서드가 호출되자마자 독립적인 트랜잭션을 생성, 끝나면 즉시 DB에 진행중 삽입
+    // CSV 파일을 만드는 동안 "진행중"
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected BackupHistory savedinProgressHistory(String workerIp) {
         BackupHistory backupHistory = new BackupHistory(workerIp, BackupHistoryStatus.IN_PROGRESS);
         return backupHistoryRepository.save(backupHistory);
     }
 
-    //백업 성공
+    // 백업 성공
     @Transactional
     protected void updatedCompletedHistory(BackupHistory backupHistory, FileMeta fileMeta) {
         backupHistory.complete(fileMeta);
         backupHistoryRepository.save(backupHistory);
     }
 
-    //백업 실패
+    // 백업 실패
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void updatedFailureHistory(BackupHistory backupHistory, FileMeta fileMeta) {
         backupHistory.fail();
@@ -206,7 +328,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             writer.write(CSV_HEADER);
             writer.newLine();
 
-            //OOM 방지: 페이징으로 끊어서 조회
+            // OOM 방지: 페이징으로 끊어서 조회
             int page = 0;
             int size = 1000;
 
@@ -217,7 +339,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 if (employees.isEmpty()) break;
 
                 for (Employee e : employees) {
-                    // 20260123 (년월일) - 시간 제거
+                    //수정 필
                     LocalDate localDate = e.getHireDate().atZone(ZoneId.systemDefault()).toLocalDate();
                     String departmentName = e.getDepartmentId() != null ? e.getDepartmentId().getName() : "";
 

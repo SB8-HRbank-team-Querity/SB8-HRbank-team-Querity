@@ -1,14 +1,14 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.service.BackupHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,10 +25,12 @@ public class BackupHistoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BackupHistoryDto>> findAll() {
+    public ResponseEntity<CursorPageResponseBackupHistoryDto> findAll(
+        @ModelAttribute BackupHistoryPageRequest request
+    ) {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(backupHistoryService.findAll());
+            .body(backupHistoryService.findAll(request));
     }
 
     @GetMapping(path = "/latest")
