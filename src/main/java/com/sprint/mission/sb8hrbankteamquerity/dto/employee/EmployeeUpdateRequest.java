@@ -3,13 +3,14 @@ package com.sprint.mission.sb8hrbankteamquerity.dto.employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 public record EmployeeUpdateRequest(
     String name,
     String email,
-    int departmentId,
+    Long departmentId,
     String position,
-    Instant hireDate,
+    LocalDate hireDate,
     EmployeeStatus status,
     String memo
 ) {

@@ -11,6 +11,7 @@ public record EmployeeSearchDto(
     String hireDateTo,
     EmployeeStatus status,
     Long idAfter,
+    String cursor,
     Integer size,
     String sortField,
     String sortDirection

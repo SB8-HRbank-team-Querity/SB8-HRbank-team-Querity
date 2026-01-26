@@ -1,44 +1,40 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.DiffDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.List;
 
 @Entity
 @Getter
+@Builder
 @Table(name = "employee_history")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 public class EmployeeHistory extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private EmployeeHistoryType type;
 
-    @Column(name = "memo", nullable = false)
+    @Column(name = "memo", columnDefinition = "text")
     private String memo;
 
     @Column(name = "ip_address", nullable = false, length = 200)
-    private String ip_address;
+    private String ipAddress;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "changed_detail", nullable = false)
-    private String changed_detail;
+    private List<DiffDto> changed_detail;
 
     @Column(name = "employee_name", nullable = false, length = 50)
-    private String employee_name;
+    private String employeeName;
 
-    @Column(name = "employee_number", columnDefinition = "jsonb", nullable = false, length = 50)
-    private String employee_number;
-
-    public EmployeeHistory(EmployeeHistorySaveRequest emp) {
-        this.type = emp.type();
-        this.memo = emp.memo();
-        this.ip_address = emp.ip_address();
-        this.changed_detail = emp.changed_detail();
-        this.employee_name = emp.employee_name();
-        this.employee_number = emp.employee_number();
-    }
+    @Column(name = "employee_number", nullable = false, length = 50)
+    private String employeeNumber;
 }

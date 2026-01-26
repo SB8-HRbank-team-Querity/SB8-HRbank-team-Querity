@@ -1,13 +1,13 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.employee;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 public record EmployeeCreateRequest(
     String name,
     String email,
-    int departmentId,
+    Long departmentId,
     String position,
-    Instant hireDate,
+    LocalDate hireDate,
     String memo
 ) {
 }
