@@ -43,6 +43,15 @@ public interface EmployeeHistoryMapper {
             compareAndAdd(diffDto, "employeeNumber", null, newDto.employeeNumber());
             return diffDto;
         }
+        else if(newDto == null) {
+            compareAndAdd(diffDto, "hireDate", oldDto.hireDate(),null);
+            compareAndAdd(diffDto, "name",  oldDto.name(),null);
+            compareAndAdd(diffDto, "position", oldDto.position(),null);
+            compareAndAdd(diffDto, "departmentName",  oldDto.departmentName(),null);
+            compareAndAdd(diffDto, "email", oldDto.email(),null);
+            compareAndAdd(diffDto, "employeeNumber", oldDto.employeeNumber(),null);
+            return diffDto;
+        }
 
         compareAndAdd(diffDto, "hireDate", oldDto.hireDate(), newDto.hireDate());
         compareAndAdd(diffDto, "name", oldDto.name(), newDto.name());
