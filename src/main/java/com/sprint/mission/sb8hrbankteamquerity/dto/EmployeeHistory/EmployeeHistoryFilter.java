@@ -1,16 +1,21 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
-import org.springframework.data.repository.query.Param;
+import com.sprint.mission.sb8hrbankteamquerity.entity.sortType;
 
 import java.time.Instant;
 
 public record EmployeeHistoryFilter(
-    @Param("number") String employeeNumber,
-    @Param("memo") String memo,
-    @Param("ip") String ip,
-    @Param("startDate") Instant startDate,
-    @Param("endDate") Instant endDate,
-    @Param("type") EmployeeHistoryType type
+    EmployeeHistoryType type,
+    String employeeNumber,
+    String memo,
+    String ipAddress,
+    Instant atFrom,
+    Instant atTo,
+    String sortField, // 기본은 ip로
+    sortType direction, // 기본은 desc로
+    Instant cursor,
+    Integer size,
+    Long idAfter
 ) {
 }

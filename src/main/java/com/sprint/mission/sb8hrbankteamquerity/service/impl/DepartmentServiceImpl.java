@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
+import com.sprint.mission.sb8hrbankteamquerity.common.util.ExcelUtils;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.CursorPageResponseDepartmentDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentCreateRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentDto;
@@ -11,13 +12,16 @@ import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.DepartmentMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -86,7 +90,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         Pageable pageable = PageRequest.of(0, size + 1);
 
         // Repository 호출
-        List<Department> departments = departmentRepository.findAllByCursor(departmentPageRequest, pageable);
+        List<Department> departments = departmentRepository.findAllByCursor(departmentPageRequest,
+            pageable);
 
         // 다음 페이지 여부 확인
         // 조회된 데이터의 size가 한 페이지의 데이터 size보다 크다면 다음 데이터가 더 있다는 의미
@@ -143,5 +148,28 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         departmentRepository.delete(department);
+    }
+
+    @Override
+    public int importDepartments(MultipartFile excelFile) throws IOException {
+        List<DepartmentCreateRequest> departmentCreateRequests =
+            ExcelUtils.toDepartmentRequests(excelFile.getInputStream());
+
+        List<Department> departments = new ArrayList<>();
+
+        for (DepartmentCreateRequest request : departmentCreateRequests) {
+            String name = request.name();
+            String description = request.description();
+            LocalDate establishedDate = request.establishedDate();
+
+            if (departmentRepository.existsByName(name)) {
+                continue;
+            }
+
+            Department department = new Department(name, description, establishedDate);
+            departments.add(department);
+        }
+
+        return departmentRepository.saveAll(departments).size();
     }
 }
