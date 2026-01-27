@@ -1,10 +1,10 @@
 server:
-  port: ${PORT:8080} # Railway가 할당해주는 포트를 사용해야 배포 성공 (기본값 8080)
+  port: ${PORT:28102} # Railway가 할당해주는 포트를 사용해야 배포 성공 (기본값 8080)
 
 spring:
   datasource:
     # Railway 환경 변수 사용 (개별 변수 조합, 더 안전함)
-    url: jdbc:postgresql://${PGHOST}:${PGPORT:5432}/${PGDATABASE} # 내부 통신은 5432가 기본값입니다. (28102는 외부 접속용)
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE} # 내부 통신은 5432가 기본값입니다. (28102는 외부 접속용)
     username: ${PGUSER}
     password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
