@@ -1,11 +1,13 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.error;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sprint.mission.sb8hrbankteamquerity.exception.ErrorCode;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 // 에러 응답용 DTO
+@JsonInclude(JsonInclude.Include.NON_NULL) // null인 필드는 JSON 응답에서 제외
 public record ErrorResponse(
     Instant timestamp,
     String traceId,
