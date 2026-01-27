@@ -172,4 +172,14 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         return departmentRepository.saveAll(departments).size();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] exportDepartments() throws IOException {
+        List<DepartmentDto> departments = departmentRepository.findAllForExcel().stream()
+            .map(departmentMapper::toDto)
+            .toList();
+
+        return ExcelUtils.toDepartmentExcel(departments);
+    }
 }
