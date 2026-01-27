@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate # 운영 환경에서는 스키마 변경 금지! (update는 위험하므로 validate 권장)
+      ddl-auto: update # 최초 배포 시 테이블 생성을 위해 update 사용 (생성 후 validate로 변경 필요)
     show-sql: false # 운영 환경에서는 SQL 로깅 최소화
 
 logging:
