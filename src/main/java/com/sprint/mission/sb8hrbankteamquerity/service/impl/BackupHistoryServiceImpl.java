@@ -76,13 +76,10 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponseBackupHistoryDto findAll(BackupHistoryPageRequest request) {
-        // 공통 파라미터
         String worker = request.worker();
-        String workerPattern = (worker != null && !worker.isBlank()) ? "%" + worker + "%" : null;
 
         Instant startedAtFrom = request.startedAtFrom();
         Instant startedAtTo = request.startedAtTo();
-
         BackupHistoryStatus statusFilter = request.status();
         int size = request.size();
 
@@ -96,69 +93,22 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         Sort.Direction direction = Sort.Direction.fromString(sortDirectionStr);
 
-        boolean isAsc = direction.isAscending();
-
         // "id"를 넣은 이유는 동시대간이 나올 때 "id"로 판단하기 위함
-        Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField, "id"));
+        Pageable pageable = PageRequest.of(0, size + 1);
 
         Long cursorId = (request.idAfter() != null) ? request.idAfter().longValue() : null;
 
-        List<BackupHistory> backupHistoryList;
-
-        // 종료 시간 기준 정렬
-        if ("endedAt".equals(sortField)) {
-            Instant cursorTime = null;
-            if (request.cursor() != null && !request.cursor().isBlank()) {
-                try {
-                    cursorTime = Instant.parse(request.cursor());
-                } catch (Exception e) {
-                }
-            }
-
-            if (isAsc) {
-                backupHistoryList = backupHistoryRepository.findAllByEndedAtAsc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            } else {
-                backupHistoryList = backupHistoryRepository.findAllByEndedAtDesc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            }
-        }
-        // 상태 기준 정렬
-        else if ("status".equals(sortField)) {
-            BackupHistoryStatus cursorStatus = null;
-            if (request.cursor() != null && !request.cursor().isBlank()) {
-                try {
-                    cursorStatus = BackupHistoryStatus.valueOf(request.cursor());
-                } catch (Exception e) {
-                }
-            }
-
-            if (isAsc) {
-                backupHistoryList = backupHistoryRepository.findAllByStatusAsc(
-                    cursorStatus, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            } else {
-                backupHistoryList = backupHistoryRepository.findAllByStatusDesc(
-                    cursorStatus, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            }
-        }
-        // 시작 시간 기준 정렬
-        else {
-            Instant cursorTime = null;
-            if (request.cursor() != null && !request.cursor().isBlank()) {
-                try {
-                    cursorTime = Instant.parse(request.cursor());
-                } catch (Exception e) {
-                }
-            }
-
-            if (isAsc) {
-                backupHistoryList = backupHistoryRepository.findAllByStartedAtAsc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            } else {
-                backupHistoryList = backupHistoryRepository.findAllByStartedAtDesc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            }
-        }
+        List<BackupHistory> backupHistoryList = backupHistoryRepository.findAllByCursor(
+            cursorId,
+            request.cursor(),
+            worker,
+            statusFilter,
+            startedAtFrom,
+            startedAtTo,
+            sortField,
+            direction,
+            pageable
+        );
 
         // Slice
         boolean hasNext = false;
