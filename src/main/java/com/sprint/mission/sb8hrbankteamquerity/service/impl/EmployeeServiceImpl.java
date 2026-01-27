@@ -1,11 +1,14 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
+import com.sprint.mission.sb8hrbankteamquerity.dto.DashBoard.EmployeeCountRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.DashBoard.EmployeeDistributionDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
@@ -18,6 +21,7 @@ import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +33,7 @@ import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -131,6 +136,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 EmployeeHistoryType.CREATED,
                 request.memo(),
                 ipUtil.getClientIp(),
+                employee.getProfileImageId(),
                 employeeHistoryMapper.toChangedDetail(newDto, null),
                 employee.getName(),
                 employee.getEmployeeNumber()
@@ -171,6 +177,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 EmployeeHistoryType.UPDATED,
                 request.memo(),
                 ipUtil.getClientIp(),
+                employee.getProfileImageId(),
                 employeeHistoryMapper.toChangedDetail(newDto, oldDto),
                 employee.getName(),
                 employee.getEmployeeNumber()
@@ -191,6 +198,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 EmployeeHistoryType.DELETED,
                 null,
                 ipUtil.getClientIp(),
+                employee.getProfileImageId(),
                 employeeHistoryMapper.toChangedDetail(null, oldDto),
                 employee.getName(),
                 employee.getEmployeeNumber()
