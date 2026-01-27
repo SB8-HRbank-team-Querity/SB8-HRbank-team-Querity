@@ -1,14 +1,11 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
-import com.sprint.mission.sb8hrbankteamquerity.dto.DashBoard.EmployeeCountRequest;
-import com.sprint.mission.sb8hrbankteamquerity.dto.DashBoard.EmployeeDistributionDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
