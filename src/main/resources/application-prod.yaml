@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # 최초 배포 시 테이블 생성을 위해 update 사용 (생성 후 validate로 변경 필요)
+      ddl-auto: validate # DBeaver로 테이블을 이미 생성했으므로 validate로 변경하여 안전성 확보
     show-sql: false # 운영 환경에서는 SQL 로깅 최소화
 
 logging:
