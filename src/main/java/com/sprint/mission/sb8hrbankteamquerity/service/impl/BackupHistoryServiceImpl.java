@@ -3,6 +3,7 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistorySearchCondition;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
@@ -82,6 +83,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         Instant startedAtTo = request.startedAtTo();
         BackupHistoryStatus statusFilter = request.status();
         int size = request.size();
+        String cursorValue = request.cursor();
 
         // 기본 설정 값 startedAt DESC
         String sortField = (request.sortField() == null || request.sortField().isBlank()) ? "startedAt" : request.sortField();
@@ -98,15 +100,20 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         Long cursorId = (request.idAfter() != null) ? request.idAfter().longValue() : null;
 
+
+        BackupHistorySearchCondition condition = BackupHistorySearchCondition.builder()
+            .cursorId(cursorId)
+            .cursorValue(cursorValue)
+            .worker(worker)
+            .statusFilter(statusFilter)
+            .startedAtFrom(startedAtFrom)
+            .startedAtTo(startedAtTo)
+            .sortField(sortField)
+            .direction(direction)
+            .build();
+
         List<BackupHistory> backupHistoryList = backupHistoryRepository.findAllByCursor(
-            cursorId,
-            request.cursor(),
-            worker,
-            statusFilter,
-            startedAtFrom,
-            startedAtTo,
-            sortField,
-            direction,
+            condition,
             pageable
         );
 

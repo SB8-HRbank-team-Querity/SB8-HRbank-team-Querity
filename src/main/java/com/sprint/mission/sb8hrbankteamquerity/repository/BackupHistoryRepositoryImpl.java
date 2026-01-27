@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistorySearchCondition;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static com.sprint.mission.sb8hrbankteamquerity.entity.QBackupHistory.backupHistory;
+import static com.sprint.mission.sb8hrbankteamquerity.entity.QFileMeta.fileMeta;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,33 +28,28 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
 
     @Override
     public List<BackupHistory> findAllByCursor(
-        Long cursorId,
-        String cursorValue,
-        String worker,
-        BackupHistoryStatus statusFilter,
-        Instant startedAtFrom,
-        Instant startedAtTo,
-        String sortField,
-        Sort.Direction direction,
+        BackupHistorySearchCondition condition,
         Pageable pageable
     ) {
         return queryFactory
             .selectFrom(backupHistory)
+            // N+1 문제 해결!!
+            .leftJoin(backupHistory.fileMeta, fileMeta).fetchJoin()
             .where(
                 // 작업자 내용을 포함하는가?
-                containsWorker(worker),
+                containsWorker(condition.worker()),
                 // 상태 내용과 일치하는가?
-                eqStatus(statusFilter),
+                eqStatus(condition.statusFilter()),
                 // 시작시간(부터) - 시작시간(까지) 사이에 있는가?
-                betweenStartedAt(startedAtFrom, startedAtTo),
+                betweenStartedAt(condition.startedAtFrom(), condition.startedAtTo()),
                 // 커서 조건
-                cursorCondition(cursorId, cursorValue, sortField, direction)
+                cursorCondition(condition.cursorId(), condition.cursorValue(), condition.sortField(), condition.direction())
             )
             .orderBy(
                 // 정렬 조건
-                getOrderSpecifier(sortField, direction),
+                getOrderSpecifier(condition.sortField(), condition.direction()),
                 // 시간이 같을 경우 아이디 값을 비교해서 정렬
-                direction.isAscending() ? backupHistory.id.asc() : backupHistory.id.desc()
+                condition.direction().isAscending() ? backupHistory.id.asc() : backupHistory.id.desc()
             )
             // 페이징 처리
             .limit(pageable.getPageSize())
