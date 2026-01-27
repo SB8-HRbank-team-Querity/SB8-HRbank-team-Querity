@@ -2,10 +2,12 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
 import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.*;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
@@ -18,7 +20,6 @@ import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -27,10 +28,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Slf4j
+import static com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus.ACTIVE;
+
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -207,5 +212,86 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employee.getProfileImageId() != null) {
             fileRepository.deleteById(employee.getProfileImageId());
         }
+    }
+
+    @Override
+    public long count(EmployeeCountRequest request) {
+        LocalDate from = request.fromDate();
+        LocalDate to = request.toDate() == null ? LocalDate.now() : request.toDate();
+
+        if (from != null) { // 이번달 신규 입사자 수
+            return employeeRepository.countByStatusAndHireDateBetween(ACTIVE, from, to);
+        }
+        if (request.status() != null) { // 총 재직자 수
+            return employeeRepository.countByStatus(request.status());
+        }
+        return employeeRepository.count();
+    }
+
+    @Override
+    public List<EmployeeDistributionDto> distribution(String groupBy, EmployeeStatus status) {
+        List<EmployeeDistributionRequest> list;
+
+        if ("position".equals(groupBy)) {  // 직무별
+            list = employeeRepository.groupPosition(status);
+        } else { // 부서별
+            list = employeeRepository.groupDepartment(status);
+        }
+
+        long count = list.stream()
+            .mapToLong(EmployeeDistributionRequest::getCount).sum();
+
+        return list.stream()
+            .map(request -> {
+                double percentage = count == 0 ? 0 : (double) request.getCount() / count * 100;
+                return new EmployeeDistributionDto(request.getGroupKey(), (int) request.getCount(), percentage);
+            })
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EmployeeTrendDto> trend(EmployeeTrendRequest request) {
+        LocalDate to = request.to() == null ? LocalDate.now() : request.to();
+        String unit = request.unit() == null ? "month" : request.unit();
+
+        List<EmployeeTrendDto> list = new ArrayList<>();
+        List<Long> counts = new ArrayList<>();
+        List<LocalDate> dates = new ArrayList<>();
+
+        // 데이터 가져오기
+        for (int i = 12; i >= 0; i--) {
+            LocalDate date = calculateDate(to, unit, i);
+            long total = employeeRepository.countEmployee(date);
+            counts.add(total);
+            dates.add(date);
+        }
+
+        // 계산
+        for (int i = 1; i < counts.size(); i++) {
+            long currentCount = counts.get(i);
+            long previousCount = counts.get(i - 1);
+
+            long change = currentCount - previousCount;
+            double changeRate = (previousCount == 0) ? 0 : ((double) change / previousCount) * 100;
+            changeRate = Math.round(changeRate * 100.0) / 100.0;
+
+            list.add(new EmployeeTrendDto(
+                dates.get(i),
+                currentCount,
+                change,
+                changeRate
+            ));
+        }
+        return list;
+    }
+
+    private LocalDate calculateDate(LocalDate to, String unit, int i) {
+        return switch (unit) {
+            case "day" -> to.minusDays(i);
+            case "week" -> to.minusWeeks(i);
+            case "quarter" -> to.minusMonths(i * 3).with(TemporalAdjusters.lastDayOfMonth());
+            case "year" -> to.minusYears(i).with(TemporalAdjusters.lastDayOfMonth());
+            default -> to.minusMonths(i).with(TemporalAdjusters.lastDayOfMonth());
+        };
     }
 }
