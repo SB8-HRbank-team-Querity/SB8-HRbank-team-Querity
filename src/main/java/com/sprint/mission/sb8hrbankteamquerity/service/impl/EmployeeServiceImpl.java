@@ -166,17 +166,15 @@ public class EmployeeServiceImpl implements EmployeeService {
             fileRepository.deleteById(oldProfileId);
         }
 
-        if (request.memo() != null && !request.memo().isEmpty()) {
-            employeeHistoryService.saveEmployeeHistory(
-                new EmployeeHistorySaveRequest(
-                    EmployeeHistoryType.UPDATED,
-                    request.memo(),
-                    ipUtil.getClientIp(),
-                    employeeHistoryMapper.toChangedDetail(newDto, oldDto),
-                    employee.getName(),
-                    employee.getEmployeeNumber()
-                ));
-        }
+        employeeHistoryService.saveEmployeeHistory(
+            new EmployeeHistorySaveRequest(
+                EmployeeHistoryType.UPDATED,
+                request.memo(),
+                ipUtil.getClientIp(),
+                employeeHistoryMapper.toChangedDetail(newDto, oldDto),
+                employee.getName(),
+                employee.getEmployeeNumber()
+            ));
         return employeeMapper.toDto(employee);
     }
 
@@ -185,6 +183,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void delete(Long id) {
         Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
+
+        EmployeeDto oldDto = employeeMapper.toDto(employee);
+
+        employeeHistoryService.saveEmployeeHistory(
+            new EmployeeHistorySaveRequest(
+                EmployeeHistoryType.DELETED,
+                null,
+                ipUtil.getClientIp(),
+                employeeHistoryMapper.toChangedDetail(null, oldDto),
+                employee.getName(),
+                employee.getEmployeeNumber()
+            ));
 
         employeeRepository.deleteById(id);
         employeeRepository.flush();
