@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -167,9 +168,18 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
         if (runningHistory.isPresent()) {
             BackupHistory backupHistory = runningHistory.get();
-            writeFailureLogToFile(backupHistory, LOG_REASON_IN_PROGRESS, workerIp);
 
-            throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
+            LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
+
+            if (backupHistory.getStartedAt().isBefore(threshold.atZone(ZoneId.systemDefault()).toInstant())) {
+                log.warn("아직 진행중인 백업이 있습니다(ID: {}). 실패 처리 후 새로운 백업을 진행합니다.", backupHistory.getId());
+
+                writeFailureLogToFile(backupHistory, "진행중인 백업 데이터르 강제 종료합니다.", workerIp);
+                updatedFailureHistory(backupHistory, null);
+            } else {
+                writeFailureLogToFile(backupHistory, LOG_REASON_IN_PROGRESS, workerIp);
+                throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
+            }
         }
 
         Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
@@ -226,6 +236,19 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         return backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(status)
             .map(backupHistoryMapper::toDto)
             .orElse(null);
+    }
+
+    @Transactional
+    @Override
+    public int updateInProgressToFailed() {
+        // 현재 시간 기준(UTC)에서 30분 뺌
+        Instant threshold = Instant.now().minus(30, ChronoUnit.MINUTES);
+
+        return backupHistoryRepository.updateInProgressStatus(
+            BackupHistoryStatus.FAILED,         // 변경할 상태
+            BackupHistoryStatus.IN_PROGRESS,    // 타겟 상태
+            threshold                           // 기준 시간
+        );
     }
 
     // 스탭 단위로 트랜잭션을 나눔
