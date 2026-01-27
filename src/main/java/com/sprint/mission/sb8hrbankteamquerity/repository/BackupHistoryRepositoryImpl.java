@@ -56,6 +56,20 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
             .fetch();
     }
 
+    @Override
+    public Long countByCondition(BackupHistorySearchCondition condition) {
+        Long count = queryFactory
+            .select(backupHistory.count())
+            .from(backupHistory)
+            .where(
+                containsWorker(condition.worker()),
+                eqStatus(condition.statusFilter()),
+                betweenStartedAt(condition.startedAtFrom(), condition.startedAtTo())
+            )
+            .fetchOne();
+        return count != null ? count : 0L;
+    }
+
     // Status를 숫자로 변환하는 메소드 (순서 정의) - 커서 페이지네이션의 무결성을 지키기 위한 넘버링
     private NumberExpression<Integer> getStatusPriority() {
         return new CaseBuilder()
@@ -66,14 +80,20 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
             //정의되지 않은 상태, 가장 뒤로 뺌
             .otherwise(99);
     }
+
     // 작업 상태값을 가져와서 숫자로 변환
     private int getPriorityByStatus(BackupHistoryStatus status) {
         switch (status) {
-            case COMPLETED: return 1;
-            case FAILED: return 2;
-            case IN_PROGRESS: return 3;
-            case SKIPPED: return 4;
-            default: return 99;
+            case COMPLETED:
+                return 1;
+            case FAILED:
+                return 2;
+            case IN_PROGRESS:
+                return 3;
+            case SKIPPED:
+                return 4;
+            default:
+                return 99;
         }
     }
 
@@ -81,13 +101,17 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
     private BooleanExpression containsWorker(String worker) {
         return (worker != null && !worker.isBlank()) ? backupHistory.worker.contains(worker) : null;
     }
+
     // 검색 조건에 작업 상태가 포함되어 있는가?
     private BooleanExpression eqStatus(BackupHistoryStatus status) {
         return status != null ? backupHistory.status.eq(status) : null;
     }
+
     // 검색 조건에 시작 시간(From), 시작 시간(To)가 포함되어 있는가?
     private BooleanExpression betweenStartedAt(Instant from, Instant to) {
-        if (from == null && to == null) { return null; }
+        if (from == null && to == null) {
+            return null;
+        }
         // Less Or Equal
         if (from == null) return backupHistory.startedAt.loe(to);
         // Greater Or Equal
@@ -98,7 +122,9 @@ public class BackupHistoryRepositoryImpl implements BackupHistoryRepositoryCusto
 
     // 커서 페이징 조건
     private BooleanExpression cursorCondition(Long cursorId, String cursorValue, String sortField, Sort.Direction direction) {
-        if (cursorId == null || cursorValue == null) { return null; }
+        if (cursorId == null || cursorValue == null) {
+            return null;
+        }
 
         boolean isAsc = direction.isAscending();
 

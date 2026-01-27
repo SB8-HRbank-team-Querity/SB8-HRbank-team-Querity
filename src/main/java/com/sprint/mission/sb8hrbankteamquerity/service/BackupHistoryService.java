@@ -12,4 +12,6 @@ public interface BackupHistoryService {
     BackupHistoryDto create(String worker);
 
     BackupHistoryDto findLatestByStatus(BackupHistoryStatus status);
+
+    int updateInProgressToFailed();
 }
