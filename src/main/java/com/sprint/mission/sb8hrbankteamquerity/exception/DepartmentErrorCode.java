@@ -26,4 +26,9 @@ public enum DepartmentErrorCode implements ErrorCode {
     public String getCode() {
         return getDomain() + "-" + getErrorKey();
     }
+
+    @Override
+    public boolean shouldAlert() {
+        return this == DEPT_NOT_EMPTY;
+    }
 }

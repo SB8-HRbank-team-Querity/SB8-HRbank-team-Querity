@@ -34,8 +34,8 @@ public class GlobalExceptionHandler {
         // 서버 로그 남기기
         log.error("비즈니스 예외 발생 : code={}, message={}, path={}", code.getCode(), code.getMessage(), request.getRequestURI());
 
-        // 디스코드 웹훅으로 알림 전송 (500 에러일 경우)
-        if (code.getHttpStatus().is5xxServerError()) {
+        // 디스코드 웹훅으로 알림 전송 (500 에러일 경우 또는 알림이 필요한 특정 에러일 경우)
+        if (code.getHttpStatus().is5xxServerError() || code.shouldAlert()) {
             discordWebhookService.sendAlert(code, e.getMessage(), request.getRequestURI());
         }
 
