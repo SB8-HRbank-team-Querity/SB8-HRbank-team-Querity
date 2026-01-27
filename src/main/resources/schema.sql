@@ -53,14 +53,15 @@ CREATE TABLE IF NOT EXISTS employee
 -- 4. 직원 정보 수정 이력 테이블
 CREATE TABLE employee_history
 (
-    id              serial PRIMARY KEY,
-    type            varchar(50)  NOT NULL,
-    memo            text,
-    ip_address      varchar(200) NOT NULL,
-    created_at      timestamptz  NOT NULL,
-    changed_detail  jsonb        NOT NULL,
-    employee_name   varchar(50)  NOT NULL,
-    employee_number varchar(50)  NOT NULL,
+    id               serial PRIMARY KEY,
+    type             varchar(50)  NOT NULL,
+    memo             text,
+    ip_address       varchar(200) NOT NULL,
+    created_at       timestamptz  NOT NULL,
+    changed_detail   jsonb        NOT NULL,
+    employee_name    varchar(50)  NOT NULL,
+    employee_number  varchar(50)  NOT NULL,
+    profile_image_id int,
 
     CHECK (type IN ('CREATED', 'UPDATED', 'DELETED'))
 );
@@ -78,7 +79,6 @@ CREATE TABLE backup_history
 
     CHECK (status IN ('SKIPPED', 'COMPLETED', 'FAILED', 'IN_PROGRESS'))
 );
-
 -- 인덱스
 CREATE INDEX idx_file_meta_created_at ON file_meta (created_at);
 
@@ -119,39 +119,95 @@ VALUES ('김민수', 'minsu.kim@company.com', 'EMP-001', 'BACKEND', '2022-03-01'
        ('윤아린', 'arin.yoon@company.com', 'EMP-008', 'PM', '2018-06-25', 'ACTIVE', 2, NULL),
        ('임도현', 'dohyun.lim@company.com', 'EMP-009', 'DEVOPS', '2020-08-17', 'ON_LEAVE', 3, NULL),
        ('장수빈', 'subin.jang@company.com', 'EMP-010', 'BACKEND', '2024-01-02', 'ACTIVE', 1, NULL);
-INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number)
-VALUES ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-    "dept": "인사팀"
-}', '홍길동', 'EMP202001'),
-       ('UPDATED', '직급 변경 (사원->대리)', '192.168.0.15', NOW(), '{
-           "pos_old": "사원",
-           "pos_new": "대리"
-       }', '김철수', 'EMP202002'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "개발1팀"
-       }', '이영희', 'EMP202003'),
-       ('UPDATED', '개인 이메일 수정', '211.234.12.5', NOW(), '{
-           "email": "changed@co.com"
-       }', '박지민', 'EMP202101'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "개발1팀"
-       }', '최준호', 'EMP202102'),
-       ('UPDATED', '휴직 처리 (육아휴직)', '10.0.5.21', NOW(), '{
-           "status": "ON_LEAVE"
-       }', '윤도현', 'EMP202202'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "디자인팀"
-       }', '강미나', 'EMP202201'),
-       ('DELETED', '퇴사 처리', '192.168.0.10', NOW(), '{
-           "reason": "개인사유"
-       }', '퇴사자A', 'EMP999999'),
-       ('UPDATED', '부서 이동', '10.0.5.21', NOW(), '{
-           "dept_old": 1,
-           "dept_new": 6
-       }', '한가인', 'EMP202302'),
-       ('CREATED', '신규 입사자 등록', '127.0.0.1', NOW(), '{
-           "dept": "영업팀"
-       }', '송강호', 'EMP202303');
+
+INSERT INTO employee_history (type, memo, ip_address, created_at, changed_detail, employee_name, employee_number,
+                              profile_image_id)
+VALUES ('CREATED', '직원 생성', '127.0.0.1', NOW(), '[
+    {
+        "propertyName": "name",
+        "before": null,
+        "after": "김민수"
+    },
+    {
+        "propertyName": "hireDate",
+        "before": null,
+        "after": "2026-01-05"
+    }
+]'::jsonb, '김민수', 'EMP-2026-0001', 1),
+       ('CREATED', '직원 생성', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "name",
+               "before": null,
+               "after": "이서연"
+           },
+           {
+               "propertyName": "hireDate",
+               "before": null,
+               "after": "2026-01-08"
+           }
+       ]'::jsonb, '이서연', 'EMP-2026-0002', 2),
+       ('UPDATED', '직무 변경', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "position",
+               "before": "사원",
+               "after": "대리"
+           }
+       ]'::jsonb, '박준호', 'EMP-2026-0003', 3),
+       ('UPDATED', '부서 변경', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "departmentName",
+               "before": "개발팀",
+               "after": "플랫폼팀"
+           }
+       ]'::jsonb, '최유진', 'EMP-2026-0004', 4),
+       ('UPDATED', '이메일 수정', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "email",
+               "before": "old@test.com",
+               "after": "new@test.com"
+           }
+       ]'::jsonb, '정다은', 'EMP-2026-0005', 5),
+       ('DELETED', '직원 삭제', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "status",
+               "before": "ACTIVE",
+               "after": "DELETED"
+           }
+       ]'::jsonb, '한지훈', 'EMP-2026-0006', 6),
+       ('CREATED', '직원 생성', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "name",
+               "before": null,
+               "after": "오세훈"
+           },
+           {
+               "propertyName": "hireDate",
+               "before": null,
+               "after": "2026-01-12"
+           }
+       ]'::jsonb, '오세훈', 'EMP-2026-0007', 7),
+       ('UPDATED', '프로필 이미지 변경', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "profileImageId",
+               "before": "3",
+               "after": "8"
+           }
+       ]'::jsonb, '문예린', 'EMP-2026-0008', 8),
+       ('UPDATED', '이름 수정', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "name",
+               "before": "김영수",
+               "after": "김영준"
+           }
+       ]'::jsonb, '김영준', 'EMP-2026-0009', 9),
+       ('DELETED', '퇴사 처리', '127.0.0.1', NOW(), '[
+           {
+               "propertyName": "status",
+               "before": "ACTIVE",
+               "after": "RESIGNED"
+           }
+       ]'::jsonb, '서현우', 'EMP-2026-0010', 10);
+
 
 INSERT INTO backup_history (worker, started_at, ended_at, status, created_at, file_id)
 VALUES ('Admin_Sys', NOW() - INTERVAL '2 days', NOW() - INTERVAL '115 minutes', 'COMPLETED', NOW(), 6),
@@ -167,7 +223,6 @@ VALUES ('Admin_Sys', NOW() - INTERVAL '2 days', NOW() - INTERVAL '115 minutes', 
        ('Admin_Sys', NOW(), NULL, 'COMPLETED', NOW(), NULL);
 
 SELECT *
-
 FROM employee;
 SELECT *
 FROM department;
