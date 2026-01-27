@@ -3,6 +3,7 @@ package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 import com.sprint.mission.sb8hrbankteamquerity.common.util.IpUtil;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistorySearchCondition;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
@@ -74,6 +75,86 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
     @Override
+    @Transactional(readOnly = true)
+    public CursorPageResponseBackupHistoryDto findAll(BackupHistoryPageRequest request) {
+        String worker = request.worker();
+
+        Instant startedAtFrom = request.startedAtFrom();
+        Instant startedAtTo = request.startedAtTo();
+        BackupHistoryStatus statusFilter = request.status();
+        int size = request.size();
+        String cursorValue = request.cursor();
+
+        // 기본 설정 값 startedAt DESC
+        String sortField = (request.sortField() == null || request.sortField().isBlank()) ? "startedAt" : request.sortField();
+        String sortDirectionStr = (request.sortDirection() == null || request.sortDirection().isBlank()) ? "DESC" : request.sortDirection();
+
+        if (!"ASC".equalsIgnoreCase(sortDirectionStr) && !"DESC".equalsIgnoreCase(sortDirectionStr)) {
+            throw new BusinessException(BackupHistoryErrorCode.BACKUP_PARAMETER_BAD_REQUEST);
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirectionStr);
+
+        // "id"를 넣은 이유는 동시대간이 나올 때 "id"로 판단하기 위함
+        Pageable pageable = PageRequest.of(0, size + 1);
+
+        Long cursorId = (request.idAfter() != null) ? request.idAfter().longValue() : null;
+
+
+        BackupHistorySearchCondition condition = BackupHistorySearchCondition.builder()
+            .cursorId(cursorId)
+            .cursorValue(cursorValue)
+            .worker(worker)
+            .statusFilter(statusFilter)
+            .startedAtFrom(startedAtFrom)
+            .startedAtTo(startedAtTo)
+            .sortField(sortField)
+            .direction(direction)
+            .build();
+
+        List<BackupHistory> backupHistoryList = backupHistoryRepository.findAllByCursor(
+            condition,
+            pageable
+        );
+
+        // Slice
+        boolean hasNext = false;
+        if (backupHistoryList.size() > size) {
+            hasNext = true;
+            backupHistoryList.remove(backupHistoryList.size() - 1);
+        }
+
+        List<BackupHistoryDto> backupHistoryDtoList = backupHistoryList.stream()
+            .map(backupHistoryMapper::toDto)
+            .toList();
+
+        String nextCursor = null;
+        Long nextIdAfter = null;
+
+        if (!backupHistoryDtoList.isEmpty()) {
+            BackupHistoryDto lastBackupHistoryDto = backupHistoryDtoList.get(backupHistoryDtoList.size() - 1);
+            nextIdAfter = lastBackupHistoryDto.id();
+
+            if ("endedAt".equals(sortField)) {
+                nextCursor = (lastBackupHistoryDto.endedAt() != null) ? lastBackupHistoryDto.endedAt() : null;
+            } else if ("status".equals(sortField)) {
+                nextCursor = lastBackupHistoryDto.status();
+            } else {
+                nextCursor = lastBackupHistoryDto.startedAt();
+            }
+        }
+
+        return new CursorPageResponseBackupHistoryDto(
+            backupHistoryDtoList,
+            nextCursor,
+            nextIdAfter,
+            size,
+            null,
+            hasNext
+        );
+    }
+
+    @Override
     public BackupHistoryDto create(String worker) {
 
         /*IP 주소
@@ -117,13 +198,11 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
             // CSV 쓰기
             writeCsvToFile(tempFile);
-
             FileMeta savedFileMeta = fileStorageService.save(tempFile, originalFileName, "text/csv");
 
             updatedCompletedHistory(backupHistory, savedFileMeta);
 
             log.info(">>> 백업 완료");
-
         } catch (Exception e) {
             log.error(">>> 백업 실패", e);
 
@@ -139,132 +218,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 }
             }
         }
-
         return backupHistoryMapper.toDto(backupHistory);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public CursorPageResponseBackupHistoryDto findAll(BackupHistoryPageRequest request) {
-        // 공통 파라미터
-        String worker = request.worker();
-        String workerPattern = (worker != null && !worker.isBlank()) ? "%" + worker + "%" : null;
-
-        Instant startedAtFrom = request.startedAtFrom();
-        Instant startedAtTo = request.startedAtTo();
-
-        BackupHistoryStatus statusFilter = request.status();
-        int size = request.size();
-
-        // 기본 설정 값 startedAt DESC
-        String sortField = (request.sortField() == null || request.sortField().isBlank()) ? "startedAt" : request.sortField();
-        String sortDirectionStr = (request.sortDirection() == null || request.sortDirection().isBlank()) ? "DESC" : request.sortDirection();
-
-        if (!"ASC".equalsIgnoreCase(sortDirectionStr) && !"DESC".equalsIgnoreCase(sortDirectionStr)) {
-            throw new BusinessException(BackupHistoryErrorCode.BACKUP_PARAMETER_BAD_REQUEST);
-        }
-
-        Sort.Direction direction = Sort.Direction.fromString(sortDirectionStr);
-
-        boolean isAsc = direction.isAscending();
-
-        // "id"를 넣은 이유는 동시대간이 나올 때 "id"로 판단하기 위함
-        Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField, "id"));
-
-        Long cursorId = (request.idAfter() != null) ? request.idAfter().longValue() : null;
-
-        List<BackupHistory> backupHistoryList;
-
-        // 종료 시간 기준 정렬
-        if ("endedAt".equals(sortField)) {
-            Instant cursorTime = null;
-            if (request.cursor() != null && !request.cursor().isBlank()) {
-                try {
-                    cursorTime = Instant.parse(request.cursor());
-                } catch (Exception e) {
-                }
-            }
-
-            if (isAsc) {
-                backupHistoryList = backupHistoryRepository.findAllByEndedAtAsc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            } else {
-                backupHistoryList = backupHistoryRepository.findAllByEndedAtDesc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            }
-        }
-        // 상태 기준 정렬
-        else if ("status".equals(sortField)) {
-            BackupHistoryStatus cursorStatus = null;
-            if (request.cursor() != null && !request.cursor().isBlank()) {
-                try {
-                    cursorStatus = BackupHistoryStatus.valueOf(request.cursor());
-                } catch (Exception e) {
-                }
-            }
-
-            if (isAsc) {
-                backupHistoryList = backupHistoryRepository.findAllByStatusAsc(
-                    cursorStatus, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            } else {
-                backupHistoryList = backupHistoryRepository.findAllByStatusDesc(
-                    cursorStatus, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            }
-        }
-        // 시작 시간 기준 정렬
-        else {
-            Instant cursorTime = null;
-            if (request.cursor() != null && !request.cursor().isBlank()) {
-                try {
-                    cursorTime = Instant.parse(request.cursor());
-                } catch (Exception e) {
-                }
-            }
-
-            if (isAsc) {
-                backupHistoryList = backupHistoryRepository.findAllByStartedAtAsc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            } else {
-                backupHistoryList = backupHistoryRepository.findAllByStartedAtDesc(
-                    cursorTime, cursorId, workerPattern, statusFilter, startedAtFrom, startedAtTo, pageable);
-            }
-        }
-
-        // Slice
-        boolean hasNext = false;
-        if (backupHistoryList.size() > size) {
-            hasNext = true;
-            backupHistoryList.remove(backupHistoryList.size() - 1);
-        }
-
-        List<BackupHistoryDto> backupHistoryDtoList = backupHistoryList.stream()
-            .map(backupHistoryMapper::toDto)
-            .toList();
-
-        String nextCursor = null;
-        Long nextIdAfter = null;
-
-        if (!backupHistoryDtoList.isEmpty()) {
-            BackupHistoryDto lastBackupHistoryDto = backupHistoryDtoList.get(backupHistoryDtoList.size() - 1);
-            nextIdAfter = lastBackupHistoryDto.id();
-
-            if ("endedAt".equals(sortField)) {
-                nextCursor = (lastBackupHistoryDto.endedAt() != null) ? lastBackupHistoryDto.endedAt() : null;
-            } else if ("status".equals(sortField)) {
-                nextCursor = lastBackupHistoryDto.status();
-            } else {
-                nextCursor = lastBackupHistoryDto.startedAt();
-            }
-        }
-
-        return new CursorPageResponseBackupHistoryDto(
-            backupHistoryDtoList,
-            nextCursor,
-            nextIdAfter,
-            size,
-            null,
-            hasNext
-        );
     }
 
     @Override
@@ -314,7 +268,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         // Instant -> ZoneId를 적용한 ZoneDateTime -> LocalDateTime
         // ZoneId.systemDefault - 한국 시간
         LocalDateTime ldt = LocalDateTime.ofInstant(backupHistory.getStartedAt(), ZoneId.systemDefault());
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
         return backupHistory.getId() + "_" + ldt.format(formatter);
@@ -398,7 +351,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 writer.newLine();
                 writer.write(LOG_STATUS + status);
             }
-
             savedFileMeta = fileStorageService.save(tempFile, fileName, "text/plain");
 
             log.info("에러 로그 파일 저장 완료");
@@ -414,7 +366,6 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
                 }
             }
         }
-
         return savedFileMeta;
     }
 }

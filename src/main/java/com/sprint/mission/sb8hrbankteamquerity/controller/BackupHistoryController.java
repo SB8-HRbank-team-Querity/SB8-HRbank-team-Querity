@@ -1,5 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.controller;
 
+import com.sprint.mission.sb8hrbankteamquerity.controller.docs.BackupHistoryApi;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
@@ -13,16 +14,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/backups")
-public class BackupHistoryController {
+public class BackupHistoryController implements BackupHistoryApi {
 
     private final BackupHistoryService backupHistoryService;
-
-    @PostMapping
-    public ResponseEntity<BackupHistoryDto> create() {
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(backupHistoryService.create(null));
-    }
 
     @GetMapping
     public ResponseEntity<CursorPageResponseBackupHistoryDto> findAll(
@@ -31,6 +25,13 @@ public class BackupHistoryController {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(backupHistoryService.findAll(request));
+    }
+
+    @PostMapping
+    public ResponseEntity<BackupHistoryDto> create() {
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(backupHistoryService.create(null));
     }
 
     @GetMapping(path = "/latest")

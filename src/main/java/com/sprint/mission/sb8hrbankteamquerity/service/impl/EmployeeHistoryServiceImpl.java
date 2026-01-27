@@ -1,19 +1,23 @@
 package com.sprint.mission.sb8hrbankteamquerity.service.impl;
 
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDetailDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.ChangeLogDto;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
-import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistorySaveRequest;
+import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
+import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
+import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeHistoryErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
-import io.swagger.v3.oas.annotations.Parameters;
+import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeHistorySpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -23,13 +27,13 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final EmployeeHistoryMapper employeeHistoryMapper;
 
-
     /*요청 예시
     EmployeeHistoryService.saveEmployeeHistory(
         new EmployeeHistorySaveRequest(
             EmployeeHistoryType.CREATED, //EmployeeHistoryType 중 하나 하시면 됩니다.
             "메모내용",
             "ip 주소 값",
+            "프로필 ID",
             EmployeeHistoryMapper.toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto),
             "직원이름",
             "사원번호"
@@ -44,23 +48,102 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         );
     }
 
-    @Override
-    public List<ChangeLogDto> getAllEmployeeHistory(
-        @RequestParam EmployeeHistoryFilter filter
-        ) {
-        List<ChangeLogDto> changeLogDtoList =
-            employeeHistoryRepository.findAll().stream().
-                map(employeeHistoryMapper::toGetResponse).toList();
 
-        return changeLogDtoList;
+    @Override
+    public CursorPageResponseChangeLogDto getAllEmployeeHistory(EmployeeHistoryFilter filter) {
+
+        int size = filter.size() != null && filter.size() > 0 ? filter.size() : 20;
+
+        // 기본 정렬 기준, iP
+        String sortField = filter.sortField() == null ? "createdAt" : filter.sortField();
+
+        if (sortField.equals("at")) {
+            sortField = "createdAt";
+        }
+
+        // 기본 출력 순서, 내림차순
+        String direc = filter.sortDirection() == null ? "desc" : filter.sortDirection().name();
+
+        Sort.Direction direction = "desc".equalsIgnoreCase(direc) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortField);
+
+        Pageable pageable = PageRequest.of(0, size + 1, sort);
+
+        Page<EmployeeHistory> slice =
+            employeeHistoryRepository.findAll(
+                EmployeeHistorySpecification.filter(filter),
+                pageable
+            );
+
+        List<ChangeLogDto> changeLogDtoList = slice.stream()
+            .map(employeeHistoryMapper::toGetResponse)
+            .toList();
+
+        Instant nextCursor = null;
+        Long nextIdAfter = null;
+
+        boolean hasNext = slice.hasNext();
+
+        if (!slice.isEmpty()) {
+            EmployeeHistory last = slice.getContent()
+                .get(Math.min(size, slice.getContent().size()) - 1);
+
+
+            nextCursor = last.getCreatedAt();
+            nextIdAfter = last.getId() ;
+        }
+
+        return new CursorPageResponseChangeLogDto(
+            changeLogDtoList,
+            nextCursor != null ? nextCursor.toString() : null,
+            nextIdAfter,
+            size,
+            changeLogDtoList.stream().count(),
+            hasNext
+        );
     }
 
     @Override
     public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
-                orElseThrow(() -> new NullPointerException("찾을 수 없는 이력입니다."));
+                orElseThrow(() -> new BusinessException(EmployeeHistoryErrorCode.EMP_HIST_NOT_FOUND));
 
         return employeeHistoryMapper.toDetailResponse(employeeHistory);
+    }
+
+    @Override
+    public Long getEmployeeHistoryCount(Instant fromDate, Instant toDate) {
+
+        Instant end = null;
+        Instant start = null;
+
+        // 파라미터가 없으면 기본적으로 최근 1주일 출력
+        if (fromDate == null && toDate == null) {
+            end = Instant.now();
+            start = end.minus(7, ChronoUnit.DAYS);
+
+        } else if ((fromDate == null && toDate != null)
+            || (fromDate != null && toDate == null)) {
+            // 날짜를 하나만 입력 했을 경우 1, 그날 하루치만 나오게
+
+            Instant day = fromDate == null ? toDate : fromDate;
+
+            start = LocalDate.parse(day.toString())
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+            end = LocalDate.parse(day.toString())
+                .plusDays(1)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
+
+        } else {
+            // 2개를 입력 했을 경우
+            start = fromDate;
+            end = toDate;
+        }
+
+        return employeeHistoryRepository.countEmployeeHistoryByCreatedAtBetween(start, end);
     }
 }

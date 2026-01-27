@@ -1,3 +1,6 @@
+server:
+    port: 8080
+
 spring:
     datasource:
         url: jdbc:h2:mem:hrbank;MODE=PostgreSQL # 메모리 모드 + PG 호환
@@ -31,3 +34,12 @@ spring:
             hibernate:
                 dialect: org.hibernate.dialect.H2Dialect
                 format_sql: true # SQL 예쁘게 출력하기
+                highlight_sql: true
+                use_sql_comments: true
+
+logging:
+    level:
+        # 실행되는 SQL 출력
+        org.hibernate.SQL: debug
+        # 바인딩되는 파라미터 출력
+        org.hibernate.orm.jdbc.bind: trace

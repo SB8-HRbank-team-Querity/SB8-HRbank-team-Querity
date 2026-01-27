@@ -6,28 +6,28 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum EmployeeErrorCode implements ErrorCode {
+public enum EmployeeHistoryErrorCode implements ErrorCode {
 
-    EMP_NOT_FOUND(2001,"NOT_FOUND",HttpStatus.NOT_FOUND,"해당 직원을 찾을 수 없습니다."),
-    EMP_DUPLICATE_EMAIL(2002,"DUPLICATE_EMAIL",HttpStatus.CONFLICT,"이미 사용 중인 이메일입니다.");
+    EMP_HIST_NOT_FOUND(3001,"NOT_FOUND",HttpStatus.NOT_FOUND,"찾을 수 없는 이력입니다.");
 
     private final int numeric;
     private final String errorKey;
     private final HttpStatus httpStatus;
     private final String message;
 
+
     @Override
     public String getDomain() {
-        return "EMP";
+        return "EMP_HIST";
     }
 
     @Override
     public String getCode() {
-        return getDomain()+"-"+getErrorKey();
+        return getDomain() + "-" + getErrorKey();
     }
 
     @Override
     public boolean shouldAlert() {
-        return this == EMP_NOT_FOUND;
+        return this == EMP_HIST_NOT_FOUND;
     }
 }

@@ -1,5 +1,7 @@
 package com.sprint.mission.sb8hrbankteamquerity.repository;
 
+import static com.sprint.mission.sb8hrbankteamquerity.entity.QEmployee.employee;
+
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -57,6 +59,14 @@ public class DepartmentRepositoryImpl implements DepartmentRepositoryCustom {
             .where(nameOrDescContains(nameOrDescription)) // 기존 메서드 재사용
             .fetchOne()
         ).orElse(0L);
+    }
+
+    @Override
+    public List<Department> findAllForExcel() {
+        return queryFactory
+            .selectFrom(department)
+            .leftJoin(department.employees, employee).fetchJoin() // 소속된 직원이 없는 부서도 조회되어야하기 때문에 leftJoin 사용
+            .fetch();
     }
 
     // 이름 또는 설명으로 검색

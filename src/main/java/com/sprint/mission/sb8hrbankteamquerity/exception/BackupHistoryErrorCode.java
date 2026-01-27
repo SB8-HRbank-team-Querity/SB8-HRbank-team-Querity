@@ -24,4 +24,9 @@ public enum BackupHistoryErrorCode implements ErrorCode {
     public String getCode() {
         return getDomain() + "-" + getErrorKey();
     }
+
+    @Override
+    public boolean shouldAlert() {
+        return this == BACKUP_ALREADY_IN_PROGRESS;
+    }
 }
