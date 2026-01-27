@@ -2,11 +2,8 @@ package com.sprint.mission.sb8hrbankteamquerity.repository;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistorySearchCondition;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
-import java.time.Instant;
 import java.util.List;
 
 public interface BackupHistoryRepositoryCustom {
@@ -14,4 +11,6 @@ public interface BackupHistoryRepositoryCustom {
         BackupHistorySearchCondition searchCondition,
         Pageable pageable
     );
+
+    Long countByCondition(BackupHistorySearchCondition condition);
 }
