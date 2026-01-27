@@ -118,6 +118,8 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             pageable
         );
 
+        long totalElements = backupHistoryRepository.countByCondition(condition);
+
         // Slice
         boolean hasNext = false;
         if (backupHistoryList.size() > size) {
@@ -150,7 +152,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
             nextCursor,
             nextIdAfter,
             size,
-            null,
+            totalElements,
             hasNext
         );
     }

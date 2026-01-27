@@ -7,7 +7,7 @@ public record CursorPageResponseBackupHistoryDto(
     String nextCursor,
     Long nextIdAfter,
     int size,
-    Integer totalElements,
+    Long totalElements,
     boolean hasNext
 ) {
 }
