@@ -8,6 +8,7 @@ public record EmployeeHistorySaveRequest(
     EmployeeHistoryType type,
     String memo,
     String ipAddress,
+    Long profileImageId,
     List<DiffDto> changed_detail,
     String employeeName,
     String employeeNumber
