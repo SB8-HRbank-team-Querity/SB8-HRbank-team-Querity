@@ -13,7 +13,7 @@ public record EmployeeHistoryFilter(
     Instant atFrom,
     Instant atTo,
     String sortField, // 기본은 ip로
-    sortType direction, // 기본은 desc로
+    sortType sortDirection, // 기본은 desc로
     Instant cursor,
     Integer size,
     Long idAfter

@@ -2,6 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
+import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -14,7 +15,7 @@ public class EmployeeHistorySpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.type() != null) {
+            if (filter.type() != null && !filter.type().equals(EmployeeHistoryType.ALL)) {
                 predicates.add(cb.equal(root.get("type"), filter.type()));
             }
 
