@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate # DBeaver로 테이블을 이미 생성했으므로 validate로 변경하여 안전성 확보
+      ddl-auto: none # validate는 타입(timestamptz vs timestamp)이 조금만 달라도 에러가 나므로, 수동 관리 시에는 none 권장
     show-sql: false # 운영 환경에서는 SQL 로깅 최소화
 
 logging:
