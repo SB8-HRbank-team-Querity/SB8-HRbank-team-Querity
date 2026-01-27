@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     # Railway 환경 변수 사용 (개별 변수 조합, 더 안전함)
-    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    url: jdbc:postgresql://${PGHOST}:${PGPORT:28102}/${PGDATABASE}
     username: ${PGUSER}
     password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
