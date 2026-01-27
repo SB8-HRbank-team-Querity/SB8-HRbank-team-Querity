@@ -26,4 +26,7 @@ public interface DepartmentService {
 
     // 엑셀로부터 부서 일괄 생성
     int importDepartments(MultipartFile excelFile) throws IOException;
+
+    // 부서 목록 엑셀 파일 생성
+    byte[] exportDepartments() throws IOException;
 }
