@@ -1,3 +1,6 @@
+server:
+  port: ${PORT:8080} # Railway가 할당해주는 포트를 사용해야 배포 성공 (기본값 8080)
+
 spring:
   datasource:
     # Railway 환경 변수 사용 (개별 변수 조합, 더 안전함)
@@ -8,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # 운영 환경에서는 스키마 변경 금지! (none 또는 update)
+      ddl-auto: validate # 운영 환경에서는 스키마 변경 금지! (update는 위험하므로 validate 권장)
     show-sql: false # 운영 환경에서는 SQL 로깅 최소화
 
 logging:
