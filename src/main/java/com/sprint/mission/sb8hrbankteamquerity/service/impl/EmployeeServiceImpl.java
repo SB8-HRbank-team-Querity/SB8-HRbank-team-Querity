@@ -18,6 +18,7 @@ import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +30,7 @@ import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -131,6 +133,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 EmployeeHistoryType.CREATED,
                 request.memo(),
                 ipUtil.getClientIp(),
+                employee.getProfileImageId(),
                 employeeHistoryMapper.toChangedDetail(newDto, null),
                 employee.getName(),
                 employee.getEmployeeNumber()
@@ -166,17 +169,16 @@ public class EmployeeServiceImpl implements EmployeeService {
             fileRepository.deleteById(oldProfileId);
         }
 
-        if (request.memo() != null && !request.memo().isEmpty()) {
-            employeeHistoryService.saveEmployeeHistory(
-                new EmployeeHistorySaveRequest(
-                    EmployeeHistoryType.UPDATED,
-                    request.memo(),
-                    ipUtil.getClientIp(),
-                    employeeHistoryMapper.toChangedDetail(newDto, oldDto),
-                    employee.getName(),
-                    employee.getEmployeeNumber()
-                ));
-        }
+        employeeHistoryService.saveEmployeeHistory(
+            new EmployeeHistorySaveRequest(
+                EmployeeHistoryType.UPDATED,
+                request.memo(),
+                ipUtil.getClientIp(),
+                employee.getProfileImageId(),
+                employeeHistoryMapper.toChangedDetail(newDto, oldDto),
+                employee.getName(),
+                employee.getEmployeeNumber()
+            ));
         return employeeMapper.toDto(employee);
     }
 
@@ -185,6 +187,19 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void delete(Long id) {
         Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new BusinessException(EmployeeErrorCode.EMP_NOT_FOUND));
+
+        EmployeeDto oldDto = employeeMapper.toDto(employee);
+
+        employeeHistoryService.saveEmployeeHistory(
+            new EmployeeHistorySaveRequest(
+                EmployeeHistoryType.DELETED,
+                null,
+                ipUtil.getClientIp(),
+                employee.getProfileImageId(),
+                employeeHistoryMapper.toChangedDetail(null, oldDto),
+                employee.getName(),
+                employee.getEmployeeNumber()
+            ));
 
         employeeRepository.deleteById(id);
         employeeRepository.flush();

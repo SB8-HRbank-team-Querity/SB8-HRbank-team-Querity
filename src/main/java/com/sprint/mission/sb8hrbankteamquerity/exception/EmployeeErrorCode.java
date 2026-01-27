@@ -26,4 +26,8 @@ public enum EmployeeErrorCode implements ErrorCode {
         return getDomain()+"-"+getErrorKey();
     }
 
+    @Override
+    public boolean shouldAlert() {
+        return this == EMP_NOT_FOUND;
+    }
 }

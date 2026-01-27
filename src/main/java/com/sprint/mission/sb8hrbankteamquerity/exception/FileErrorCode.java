@@ -28,4 +28,9 @@ public enum FileErrorCode implements ErrorCode {
     public String getCode() {
         return getDomain() + "-" + getErrorKey();
     }
+
+    @Override
+    public boolean shouldAlert() {
+        return this == FILE_DOWNLOAD_FAILED;
+    }
 }

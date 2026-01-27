@@ -38,16 +38,27 @@ public interface EmployeeHistoryMapper {
             compareAndAdd(diffDto, "hireDate", null, newDto.hireDate());
             compareAndAdd(diffDto, "name", null, newDto.name());
             compareAndAdd(diffDto, "position", null, newDto.position());
-            compareAndAdd(diffDto, "departmentName", null, newDto.departmentName());
+            compareAndAdd(diffDto, "department", null, newDto.departmentName());
             compareAndAdd(diffDto, "email", null, newDto.email());
             compareAndAdd(diffDto, "employeeNumber", null, newDto.employeeNumber());
+            compareAndAdd(diffDto, "status", null, newDto.status());
+            return diffDto;
+        }
+        else if(newDto == null) {
+            compareAndAdd(diffDto, "hireDate", oldDto.hireDate(),null);
+            compareAndAdd(diffDto, "name",  oldDto.name(),null);
+            compareAndAdd(diffDto, "position", oldDto.position(),null);
+            compareAndAdd(diffDto, "department",  oldDto.departmentName(),null);
+            compareAndAdd(diffDto, "email", oldDto.email(),null);
+            compareAndAdd(diffDto, "employeeNumber", oldDto.employeeNumber(),null);
+            compareAndAdd(diffDto, "status", oldDto.status(), null);
             return diffDto;
         }
 
         compareAndAdd(diffDto, "hireDate", oldDto.hireDate(), newDto.hireDate());
         compareAndAdd(diffDto, "name", oldDto.name(), newDto.name());
         compareAndAdd(diffDto, "position", oldDto.position(), newDto.position());
-        compareAndAdd(diffDto, "departmentName", oldDto.departmentName(), newDto.departmentName());
+        compareAndAdd(diffDto, "department", oldDto.departmentName(), newDto.departmentName());
         compareAndAdd(diffDto, "email", oldDto.email(), newDto.email());
         compareAndAdd(diffDto, "employeeNumber", oldDto.employeeNumber(), newDto.employeeNumber());
         compareAndAdd(diffDto, "status", oldDto.status(), newDto.status());

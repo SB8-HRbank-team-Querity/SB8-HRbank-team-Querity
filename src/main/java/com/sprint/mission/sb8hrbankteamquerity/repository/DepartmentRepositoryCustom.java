@@ -10,4 +10,6 @@ public interface DepartmentRepositoryCustom {
     List<Department> findAllByCursor(DepartmentPageRequest departmentPageRequest, Pageable pageable);
 
     long countByNameOrDescription(String nameOrDescription);
+
+    List<Department> findAllForExcel();
 }

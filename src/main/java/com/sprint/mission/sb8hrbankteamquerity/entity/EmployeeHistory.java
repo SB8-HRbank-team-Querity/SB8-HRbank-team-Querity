@@ -28,6 +28,9 @@ public class EmployeeHistory extends BaseEntity {
     @Column(name = "ip_address", nullable = false, length = 200)
     private String ipAddress;
 
+    @Column(name = "profile_image_id")
+    private Long profileImageId;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "changed_detail", nullable = false)
     private List<DiffDto> changed_detail;

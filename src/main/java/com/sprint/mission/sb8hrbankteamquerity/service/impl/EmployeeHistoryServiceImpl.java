@@ -33,6 +33,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
             EmployeeHistoryType.CREATED, //EmployeeHistoryType 중 하나 하시면 됩니다.
             "메모내용",
             "ip 주소 값",
+            "프로필 ID",
             EmployeeHistoryMapper.toChangedDetail(EmployeeDto newDto, EmployeeDto oldDto),
             "직원이름",
             "사원번호"
@@ -61,7 +62,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
         }
 
         // 기본 출력 순서, 내림차순
-        String direc = filter.direction() == null ? "desc" : filter.direction().toString();
+        String direc = filter.sortDirection() == null ? "desc" : filter.sortDirection().name();
 
         Sort.Direction direction = "desc".equalsIgnoreCase(direc) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortField);
@@ -106,7 +107,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
-                orElseThrow(() -> new BusinessException(EmployeeHistoryErrorCode.EMP_HISTORY_NOT_FOUND));
+                orElseThrow(() -> new BusinessException(EmployeeHistoryErrorCode.EMP_HIST_NOT_FOUND));
 
         return employeeHistoryMapper.toDetailResponse(employeeHistory);
     }

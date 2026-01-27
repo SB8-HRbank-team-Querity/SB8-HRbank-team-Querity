@@ -9,12 +9,14 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "부서 관리", description = "부서 관리 API")
 public interface DepartmentApi {
@@ -100,4 +102,33 @@ public interface DepartmentApi {
     })
     ResponseEntity<Void> delete(
         @Parameter(description = "부서 ID") Long departmentId);
+
+    @Operation(summary = "부서 일괄 등록", description = "엑셀 파일을 통해 부서를 일괄 등록합니다.")
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200", description = "등록 성공",
+            content = @Content(mediaType = "text/plain", schema = @Schema(type = "string"),
+                examples = @ExampleObject(value = "5 departments have been successfully registered."))),
+        @ApiResponse(
+            responseCode = "400", description = "잘못된 엑셀 파일 형식 또는 데이터",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<String> importExcel(MultipartFile excelFile);
+
+    @Operation(summary = "부서 일괄 추출", description = "전체 부서 목록을 엑셀 파일로 다운로드합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "추출 성공",
+            content = @Content(
+                mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                schema = @Schema(type = "string", format = "binary"))),
+        @ApiResponse(
+            responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<byte[]> exportExcel();
 }

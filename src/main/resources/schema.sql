@@ -53,14 +53,15 @@ CREATE TABLE IF NOT EXISTS employee
 -- 4. 직원 정보 수정 이력 테이블
 CREATE TABLE employee_history
 (
-    id              serial PRIMARY KEY,
-    type            varchar(50)  NOT NULL,
-    memo            text,
-    ip_address      varchar(200) NOT NULL,
-    created_at      timestamptz  NOT NULL,
-    changed_detail  jsonb        NOT NULL,
-    employee_name   varchar(50)  NOT NULL,
-    employee_number varchar(50)  NOT NULL,
+    id               serial PRIMARY KEY,
+    type             varchar(50)  NOT NULL,
+    memo             text,
+    ip_address       varchar(200) NOT NULL,
+    created_at       timestamptz  NOT NULL,
+    changed_detail   jsonb        NOT NULL,
+    employee_name    varchar(50)  NOT NULL,
+    employee_number  varchar(50)  NOT NULL,
+    profile_image_id int,
 
     CHECK (type IN ('CREATED', 'UPDATED', 'DELETED'))
 );
@@ -78,6 +79,5 @@ CREATE TABLE backup_history
 
     CHECK (status IN ('SKIPPED', 'COMPLETED', 'FAILED', 'IN_PROGRESS'))
 );
-
 -- 인덱스
 CREATE INDEX idx_file_meta_created_at ON file_meta (created_at);

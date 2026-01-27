@@ -9,8 +9,10 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.department.DepartmentUpdateRe
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.service.DepartmentService;
-import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -101,8 +103,27 @@ public class DepartmentController implements DepartmentApi {
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(String.format("%d departments have been successfully registered.", savedCount));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new BusinessException(DepartmentErrorCode.INVALID_EXCEL_FILE);
+        }
+    }
+
+    @GetMapping(value = "/export")
+    public ResponseEntity<byte[]> exportExcel(){
+        try {
+            byte[] fileContent = departmentService.exportDepartments();
+
+            // LocalDateTime을 안전한 문자열로 변환
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
+            String fileName = "departments_" + timestamp + ".xlsx";
+
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(fileContent);
+        } catch (Exception e) {
+            throw new BusinessException(DepartmentErrorCode.EXCEL_EXPORT_ERROR);
         }
     }
 }
