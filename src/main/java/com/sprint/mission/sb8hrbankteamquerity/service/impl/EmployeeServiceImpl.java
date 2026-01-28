@@ -20,6 +20,7 @@ import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
 import com.sprint.mission.sb8hrbankteamquerity.service.Specification.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -88,16 +89,15 @@ public class EmployeeServiceImpl implements EmployeeService {
             .and(EmployeeSpecification.hireDateBetween(from, to))
             .and(EmployeeSpecification.statusEquals(Dto.status()));
 
-        Long totalElements = employeeRepository.count(specification);
-        Pageable pageable = PageRequest.of(pageNumber, size + 1, sort);
-        List<Employee> employees = employeeRepository.findAll(specification, pageable).getContent();
+        Pageable pageable = PageRequest.of(pageNumber, size, sort);
+        Page<Employee> employees = employeeRepository.findAll(specification, pageable);
 
-        // 다음 페이지가 있는지 확인
-        boolean hasNext = employees.size() > size;
-        List<EmployeeDto> content = employees.stream()
-            .limit(size)
+        Long totalElements = employees.getTotalElements();
+
+        List<EmployeeDto> content = employees.getContent().stream()
             .map(employeeMapper::toDto)
             .toList();
+        boolean hasNext = employees.hasNext();
 
         // 다음 페이지 요청 값
         Long nextIdAfter = hasNext ? (long) (pageNumber + 1) : null;
