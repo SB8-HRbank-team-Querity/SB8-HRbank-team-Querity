@@ -1,38 +1,37 @@
 spring:
-    application:
-        name: hrbank
-    # 기본 프로필 설정 (로컬 테스트 후 prod로 변경하여 커밋 예정)
-    profiles:
-        active: prod
-    servlet:
-        multipart:
-            enabled: true               # 파일 업로드 활성화 여부 (기본값 true)
-            max-file-size: 10MB         # 업로드 가능한 개별 파일 최대 크기
-            max-request-size: 30MB      # 전체 요청의 최대 크기
-            location: /tmp
-    mail:
-        host: smtp.gmail.com # 또는 localhost
-        port: 587
-        username: user
-        password: password
-        properties:
-            mail:
-                smtp:
-                    auth: true
-                    starttls:
-                        enable: true
+  application:
+    name: hrbank
+  # 기본 프로필 설정 (로컬 테스트 후 prod로 변경하여 커밋 예정)
+  profiles:
+    active: prod
+  servlet:
+    multipart:
+      enabled: true               # 파일 업로드 활성화 여부 (기본값 true)
+      max-file-size: 10MB         # 업로드 가능한 개별 파일 최대 크기
+      max-request-size: 30MB      # 전체 요청의 최대 크기
+      location: /tmp
+  mail:
+    host: smtp.gmail.com # 또는 localhost
+    port: 587
+    username: user
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 # 커스텀 파일 저장 경로 설정
 file:
-    upload-dir: uploads
+  upload-dir: uploads
 
 # 4. backup
-
 backup:
-    scheduler:
-        interval: 10000000 # 1시간, ms 기준, 시간은 테스트 중이므로 변동 사항있음
+  scheduler:
+    interval: 10000000 # 1시간, ms 기준, 시간은 테스트 중이므로 변동 사항있음
 
 # 5. discord
 discord:
-    webhook:
-        url: "https://discord.com/api/webhooks/1464525247683498068/ynJQTs8MLY-_eKYjTgpqtkArQzUTSgBxDpoObNak2AWSqLaK9WBNbuAy6vsapulYDCv5"
+  webhook:
+    url: "https://discord.com/api/webhooks/1464525247683498068/ynJQTs8MLY-_eKYjTgpqtkArQzUTSgBxDpoObNak2AWSqLaK9WBNbuAy6vsapulYDCv5"
