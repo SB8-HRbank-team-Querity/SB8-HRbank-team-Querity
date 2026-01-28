@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.service.Specification;
+package com.sprint.mission.sb8hrbankteamquerity.service.specification;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;

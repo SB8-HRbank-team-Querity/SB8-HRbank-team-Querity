@@ -18,7 +18,7 @@ import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
-import com.sprint.mission.sb8hrbankteamquerity.service.Specification.EmployeeSpecification;
+import com.sprint.mission.sb8hrbankteamquerity.service.specification.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

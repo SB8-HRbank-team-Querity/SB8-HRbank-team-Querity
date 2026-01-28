@@ -7,7 +7,7 @@ import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeHistoryErrorCod
 import com.sprint.mission.sb8hrbankteamquerity.mapper.EmployeeHistoryMapper;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
-import com.sprint.mission.sb8hrbankteamquerity.service.Specification.EmployeeHistorySpecification;
+import com.sprint.mission.sb8hrbankteamquerity.service.specification.EmployeeHistorySpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
