@@ -9,6 +9,7 @@
 - 박하민 (parkhamint@naver.com)
 ***
 ## 프로젝트 소개
+- <img width="1905" height="909" alt="image" src="https://github.com/user-attachments/assets/e0e26d5e-f3c4-46c4-a4bd-d949c96c21dd" />
 - **HR Bank**
 - Batch로 데이터를 관리하는 Open EMS
 - 기업의 인적 자원을 안전하게 관리하는 서비스
@@ -29,6 +30,7 @@
 ***
 ## 팀원별 구현 기능 상세
 ### 박하민
+- <img width="1919" height="905" alt="image" src="https://github.com/user-attachments/assets/e340326b-c334-4c60-a01e-60fa02fd954d" />
 - **부서 등록**
   - {이름}, {설명}, {설립일}을 입력해 부서를 등록할 수 있습니다.
       - {이름}은 중복될 수 없습니다.
@@ -53,6 +55,7 @@
 - **부서 일괄 추출**
   - 생성된 부서 목록을 엑셀 파일로 추출합니다.
 ### 이예은
+- <img width="1919" height="909" alt="image" src="https://github.com/user-attachments/assets/e7def04e-c870-4548-ad55-05ff28140332" />
 - **직원 등록**
   - {이름}, {이메일}, {부서}, {직함}, {입사일}, {프로필 이미지}를 통해 직원을 등록할 수 있습니다.
       - {이메일}은 다른 직원과 중복되면 안됩니다.
@@ -85,6 +88,7 @@
 - **쿼리 고도화**
   - specification을 활용하여 복잡한 쿼리의 가독성을 높일 수 있습니다.
 ### 홍성휘
+- <img width="571" height="366" alt="image" src="https://github.com/user-attachments/assets/5c17ecd6-175f-454b-bff1-20502a0a70d2" />
 - **파일 저장**
   - {메타 정보}는 데이터베이스에, {실제 파일}은 로컬 디스크에 저장합니다.
 - **파일 다운로드**
@@ -97,6 +101,7 @@
 - **H2 데이터베이스 활용**
   - 로컬 개발환경에서 H2 데이터베이스를 활용해 간단하게 DB를 구성해보세요.
 ### 황진서
+- <img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/b7ead9b9-94e8-461d-b629-f12e8df188e6" />
 - **이력 등록**
   - 직원 추가, 직원 정보 수정 화면에서 입력하는 메모 정보를 통해 등록합니다.
       - {유형}, {대상 직원 사번}, {변경 상세 내용}은 로직 흐름에 따라 적절히 판단합니다.
@@ -118,6 +123,7 @@
 - **쿼리 고도화**
   - specification을 활용하여 복잡한 쿼리의 가독성을 높일 수 있습니다.
 ### 이재준
+- <img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/79bdb6de-6beb-40f7-8a4e-b79e7b24d2f2" />
 - **데이터 백업**
 - **STEP.1** 데이터 백업 필요 여부를 판단합니다.
     - 가장 최근 완료된 배치 작업 시간 이후 직원 데이터가 변경된 경우에 데이터 백업이 필요한 것으로 간주합니다.
@@ -178,30 +184,29 @@ src
 │  │                  │  │  QFileMeta.java
 │  │                  │  └─base
 │  │                  │          QBaseEntity.java
-│  │                  │          QBaseUpdatableEntity.java      
+│  │                  │          QBaseUpdatableEntity.java         
 │  │                  └─mapper
 │  │                          BackupHistoryMapperImpl.java
 │  │                          DepartmentMapperImpl.java
 │  │                          EmployeeHistoryMapperImpl.java
 │  │                          EmployeeMapperImpl.java
-│  │                          FileMetaMapperImpl.java                      
+│  │                          FileMetaMapperImpl.java           
 │  ├─java
 │  │  └─com
 │  │      └─sprint
 │  │          └─mission
 │  │              └─sb8hrbankteamquerity
-│  │                  │  Sb8HrbankTeamQuerityApplication.java
+│  │                  │  Sb8HrbankTeamQuerityApplication.java 
 │  │                  ├─common
 │  │                  │  └─util
 │  │                  │          ExcelUtils.java
-│  │                  │          IpUtil.java       
+│  │                  │          IpUtil.java        
 │  │                  ├─component
 │  │                  │      BackupScheduler.java    
 │  │                  ├─config
-│  │                  │      QuerydslConfig.java 
+│  │                  │      QuerydslConfig.java     
 │  │                  ├─controller
 │  │                  │  │  BackupHistoryController.java
-│  │                  │  │  DashboardController.java
 │  │                  │  │  DepartmentController.java
 │  │                  │  │  EmployeeController.java
 │  │                  │  │  EmployeeHistoryController.java
@@ -211,53 +216,60 @@ src
 │  │                  │          DepartmentApi.java
 │  │                  │          EmployeeApi.java
 │  │                  │          EmployeeHistoryApi.java
-│  │                  │          FileMetaApi.java        
+│  │                  │          FileMetaApi.java      
 │  │                  ├─dto
 │  │                  │  ├─BackupHistory
 │  │                  │  │      BackupHistoryDto.java
 │  │                  │  │      BackupHistoryPageRequest.java
 │  │                  │  │      BackupHistorySearchCondition.java
 │  │                  │  │      CursorPageResponseBackupHistoryDto.java     
+│  │                  │  ├─dashBoard
+│  │                  │  │      EmployeeCountRequest.java
+│  │                  │  │      EmployeeDistributionDto.java
+│  │                  │  │      EmployeeDistributionRequest.java
+│  │                  │  │      EmployeeTrendDto.java
+│  │                  │  │      EmployeeTrendRequest.java     
 │  │                  │  ├─department
 │  │                  │  │      CursorPageResponseDepartmentDto.java
 │  │                  │  │      DepartmentCreateRequest.java
 │  │                  │  │      DepartmentDto.java
 │  │                  │  │      DepartmentPageRequest.java
-│  │                  │  │      DepartmentUpdateRequest.java  
+│  │                  │  │      DepartmentUpdateRequest.java     
 │  │                  │  ├─discord
 │  │                  │  │      DiscordEmbedRequest.java
 │  │                  │  │      DiscordFieldRequest.java
-│  │                  │  │      DiscordMessageRequest.java      
+│  │                  │  │      DiscordMessageRequest.java   
 │  │                  │  ├─employee
 │  │                  │  │      EmployeeCreateRequest.java
 │  │                  │  │      EmployeeDto.java
 │  │                  │  │      EmployeePageResponse.java
 │  │                  │  │      EmployeeSearchDto.java
-│  │                  │  │      EmployeeUpdateRequest.java    
+│  │                  │  │      EmployeeUpdateRequest.java     
 │  │                  │  ├─EmployeeHistory
 │  │                  │  │      ChangeLogDetailDto.java
 │  │                  │  │      ChangeLogDto.java
 │  │                  │  │      CursorPageResponseChangeLogDto.java
 │  │                  │  │      DiffDto.java
 │  │                  │  │      EmployeeHistoryFilter.java
-│  │                  │  │      EmployeeHistorySaveRequest.java      
+│  │                  │  │      EmployeeHistorySaveRequest.java    
 │  │                  │  ├─error
-│  │                  │  │      ErrorResponse.java   
+│  │                  │  │      ErrorResponse.java    
 │  │                  │  └─fileMeta
-│  │                  │          FileMetaResponse.java
+│  │                  │          FileMetaResponse.java         
 │  │                  ├─entity
 │  │                  │  │  BackupHistory.java
-│  │                  │  │  BackupHistoryStatus.java
 │  │                  │  │  Department.java
 │  │                  │  │  Employee.java
 │  │                  │  │  EmployeeHistory.java
-│  │                  │  │  EmployeeHistoryType.java
-│  │                  │  │  EmployeeStatus.java
 │  │                  │  │  FileMeta.java
-│  │                  │  │  sortType.java
-│  │                  │  └─base
-│  │                  │          BaseEntity.java
-│  │                  │          BaseUpdatableEntity.java         
+│  │                  │  ├─base
+│  │                  │  │      BaseEntity.java
+│  │                  │  │      BaseUpdatableEntity.java  
+│  │                  │  └─enums
+│  │                  │          BackupHistoryStatus.java
+│  │                  │          EmployeeHistoryType.java
+│  │                  │          EmployeeStatus.java
+│  │                  │          sortType.java          
 │  │                  ├─exception
 │  │                  │      BackupHistoryErrorCode.java
 │  │                  │      BusinessException.java
@@ -267,40 +279,43 @@ src
 │  │                  │      ErrorCode.java
 │  │                  │      FileErrorCode.java
 │  │                  │      GlobalErrorCode.java
-│  │                  │      GlobalExceptionHandler.java     
+│  │                  │      GlobalExceptionHandler.java    
 │  │                  ├─mapper
 │  │                  │      BackupHistoryMapper.java
 │  │                  │      DepartmentMapper.java
 │  │                  │      EmployeeHistoryMapper.java
 │  │                  │      EmployeeMapper.java
-│  │                  │      FileMetaMapper.java     
+│  │                  │      FileMetaMapper.java  
 │  │                  ├─repository
-│  │                  │      BackupHistoryRepository.java
-│  │                  │      BackupHistoryRepositoryCustom.java
-│  │                  │      BackupHistoryRepositoryImpl.java
-│  │                  │      DepartmentRepository.java
-│  │                  │      DepartmentRepositoryCustom.java
-│  │                  │      DepartmentRepositoryImpl.java
-│  │                  │      EmployeeHistoryRepository.java
-│  │                  │      EmployeeRepository.java
-│  │                  │      FileRepository.java   
+│  │                  │  │  BackupHistoryRepository.java
+│  │                  │  │  BackupHistoryRepositoryCustom.java
+│  │                  │  │  DepartmentRepository.java
+│  │                  │  │  DepartmentRepositoryCustom.java
+│  │                  │  │  EmployeeHistoryRepository.java
+│  │                  │  │  EmployeeRepository.java
+│  │                  │  │  FileRepository.java 
+│  │                  │  └─impl
+│  │                  │          BackupHistoryRepositoryImpl.java
+│  │                  │          DepartmentRepositoryImpl.java         
 │  │                  └─service
 │  │                      │  BackupHistoryService.java
 │  │                      │  DepartmentService.java
 │  │                      │  DiscordWebhookService.java
+│  │                      │  EmailService.java
 │  │                      │  EmployeeHistoryService.java
 │  │                      │  EmployeeService.java
 │  │                      │  FileStorageService.java
-│  │                      ├─criteriaAPI
-│  │                      │      EmployeeHistorySpecification.java
-│  │                      │      EmployeeSpecification.java    
-│  │                      └─impl
-│  │                              BackupHistoryServiceImpl.java
-│  │                              DepartmentServiceImpl.java
-│  │                              DiscordWebhookServiceImpl.java
-│  │                              EmployeeHistoryServiceImpl.java
-│  │                              EmployeeServiceImpl.java
-│  │                              FileStorageServiceImpl.java                  
+│  │                      ├─impl
+│  │                      │      BackupHistoryServiceImpl.java
+│  │                      │      DepartmentServiceImpl.java
+│  │                      │      DiscordWebhookServiceImpl.java
+│  │                      │      EmailServiceImpl.java
+│  │                      │      EmployeeHistoryServiceImpl.java
+│  │                      │      EmployeeServiceImpl.java
+│  │                      │      FileStorageServiceImpl.java    
+│  │                      └─specification
+│  │                              EmployeeHistorySpecification.java
+│  │                              EmployeeSpecification.java           
 │  └─resources
 │      │  application-local.yaml
 │      │  application-prod.yaml
@@ -332,7 +347,7 @@ src
 │                  Pretendard-SemiBold-ClEDdoZU.woff2
 │                  Pretendard-SemiBold-SXfe8JY8.woff
 │                  Pretendard-Thin-Cq3km6ap.woff
-│                  Pretendard-Thin-DWJVAZ2K.woff2              
+│                  Pretendard-Thin-DWJVAZ2K.woff2            
 └─test
     └─java
         └─com
