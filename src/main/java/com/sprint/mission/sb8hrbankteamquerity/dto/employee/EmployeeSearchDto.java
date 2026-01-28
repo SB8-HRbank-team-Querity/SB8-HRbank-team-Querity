@@ -1,6 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.employee;
 
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus;
 
 public record EmployeeSearchDto(
     String nameOrEmail,

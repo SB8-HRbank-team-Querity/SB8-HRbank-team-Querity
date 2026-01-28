@@ -4,7 +4,7 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDt
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -4,7 +4,7 @@ import com.sprint.mission.sb8hrbankteamquerity.controller.docs.BackupHistoryApi;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPageRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.service.BackupHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
