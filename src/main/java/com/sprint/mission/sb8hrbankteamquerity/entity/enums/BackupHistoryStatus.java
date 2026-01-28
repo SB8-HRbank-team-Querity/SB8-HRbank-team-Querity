@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.entity;
+package com.sprint.mission.sb8hrbankteamquerity.entity.enums;
 
 public enum BackupHistoryStatus {
     IN_PROGRESS("진행중"),

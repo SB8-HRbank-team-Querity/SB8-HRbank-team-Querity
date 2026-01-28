@@ -1,6 +1,6 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory;
 
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
 import jakarta.validation.constraints.Min;
 
 import java.time.Instant;

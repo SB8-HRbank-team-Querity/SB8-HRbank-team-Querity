@@ -6,7 +6,7 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistoryPa
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistorySearchCondition;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.CursorPageResponseBackupHistoryDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
 import com.sprint.mission.sb8hrbankteamquerity.entity.FileMeta;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BackupHistoryErrorCode;
@@ -16,6 +16,7 @@ import com.sprint.mission.sb8hrbankteamquerity.repository.BackupHistoryRepositor
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeHistoryRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.BackupHistoryService;
+import com.sprint.mission.sb8hrbankteamquerity.service.EmailService;
 import com.sprint.mission.sb8hrbankteamquerity.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     private final BackupHistoryMapper backupHistoryMapper;
 
     private final FileStorageService fileStorageService;
+    private final EmailService emailService;
 
     private final IpUtil ipUtil;
 
@@ -169,28 +171,36 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
         Optional<BackupHistory> runningHistory = backupHistoryRepository.findTopByStatusOrderByStartedAtDesc(BackupHistoryStatus.IN_PROGRESS);
 
         if (runningHistory.isPresent()) {
-            BackupHistory backupHistory = runningHistory.get();
+            BackupHistory InProgressBackupHistory = runningHistory.get();
 
             LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
 
-            if (backupHistory.getStartedAt().isBefore(threshold.atZone(ZoneId.systemDefault()).toInstant())) {
-                log.warn("아직 진행중인 백업이 있습니다(ID: {}). 실패 처리 후 새로운 백업을 진행합니다.", backupHistory.getId());
+            //백업 진행중인(IN_PROGRESS) 상태가 30분이 지난 경우
+            if (InProgressBackupHistory.getStartedAt().isBefore(threshold.atZone(ZoneId.systemDefault()).toInstant())) {
+                log.warn("아직 진행중인 백업이 있습니다(ID: {}). 실패 처리 후 새로운 백업을 진행합니다.", InProgressBackupHistory.getId());
 
-                writeFailureLogToFile(backupHistory, "진행중인 백업 데이터르 강제 종료합니다.", workerIp);
-                updatedFailureHistory(backupHistory, null);
+                writeFailureLogToFile(InProgressBackupHistory, "진행중인 백업 데이터를 강제 종료합니다.", workerIp);
+                updatedFailureHistory(InProgressBackupHistory, null);
             } else {
-                writeFailureLogToFile(backupHistory, LOG_REASON_IN_PROGRESS, workerIp);
+                FileMeta errorLogFilefileMeta = writeFailureLogToFile(InProgressBackupHistory, LOG_REASON_IN_PROGRESS, workerIp);
+                updatedFailureHistory(InProgressBackupHistory, errorLogFilefileMeta);
+                emailService.sendBackupStatusEmail(InProgressBackupHistory.getId(), false, "이미 진행중인 백업이 있습니다.");
                 throw new BusinessException(BackupHistoryErrorCode.BACKUP_ALREADY_IN_PROGRESS);
             }
         }
 
-        Instant lastEndedAt = backupHistoryRepository.findLatestEndedAt()
-            .orElse(Instant.EPOCH);
+        Optional<Instant> lastEndedAt = backupHistoryRepository.findLatestEndedAt();
 
-        boolean needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt);
+        boolean needBackup;
+
+        if (lastEndedAt.isPresent()) {
+            needBackup = employeeHistoryRepository.existsByCreatedAtGreaterThanEqual(lastEndedAt.get());
+        } else {
+            needBackup = employeeHistoryRepository.count() > 0;
+        }
 
         // 백업이 필요한 경우와 불필요한 경우 진행중인 상태는 유지되어야 함
-        BackupHistory backupHistory = savedinProgressHistory(workerIp);
+        BackupHistory backupHistory = savedInProgressHistory(workerIp);
 
         // 백업이 불필요한 경우
         if (!needBackup) {
@@ -214,12 +224,16 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
 
             updatedCompletedHistory(backupHistory, savedFileMeta);
 
+            emailService.sendBackupStatusEmail(backupHistory.getId(), true, null);
+
             log.info(">>> 백업 완료");
         } catch (Exception e) {
             log.error(">>> 백업 실패", e);
 
             FileMeta errorLogFilefileMeta = writeFailureLogToFile(backupHistory, LOG_REASON_BAD_REQUEST, workerIp);
+
             updatedFailureHistory(backupHistory, errorLogFilefileMeta);
+            emailService.sendBackupStatusEmail(backupHistory.getId(), false, null);
         } finally {
             // 백업 성공 실패 상관 없이 임시 파일 삭제
             if (tempPath != null) {
@@ -266,7 +280,7 @@ public class BackupHistoryServiceImpl implements BackupHistoryService {
     // 메서드가 호출되자마자 독립적인 트랜잭션을 생성, 끝나면 즉시 DB에 진행중 삽입
     // CSV 파일을 만드는 동안 "진행중"
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected BackupHistory savedinProgressHistory(String workerIp) {
+    protected BackupHistory savedInProgressHistory(String workerIp) {
         BackupHistory backupHistory = new BackupHistory(workerIp, BackupHistoryStatus.IN_PROGRESS);
         return backupHistoryRepository.save(backupHistory);
     }

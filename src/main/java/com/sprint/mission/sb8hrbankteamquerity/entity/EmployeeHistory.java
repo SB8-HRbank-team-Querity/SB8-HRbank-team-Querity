@@ -2,6 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.entity;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.DiffDto;
 import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseEntity;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeHistoryType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

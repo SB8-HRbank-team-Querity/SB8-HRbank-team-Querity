@@ -1,6 +1,7 @@
 package com.sprint.mission.sb8hrbankteamquerity.entity;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.base.BaseEntity;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -82,7 +82,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponseDepartmentDto findAll(DepartmentPageRequest departmentPageRequest) {
-        // 기본값 설멍 및 페이지네이션 준비
+        // 기본값 설명 및 페이지네이션 준비
         int size = departmentPageRequest.size() != null && departmentPageRequest.size() > 0
             ? departmentPageRequest.size() : 10;
 

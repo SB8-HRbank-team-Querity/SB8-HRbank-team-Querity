@@ -6,7 +6,7 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.EmployeeTrendDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.EmployeeTrendRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.dto.error.ErrorResponse;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -81,7 +81,7 @@ public interface EmployeeApi {
         ),
     })
     ResponseEntity<EmployeeDto> create(
-        @RequestPart("request") EmployeeCreateRequest request,
+        @RequestPart("employee") EmployeeCreateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException;
 
 
@@ -102,7 +102,7 @@ public interface EmployeeApi {
     })
     ResponseEntity<EmployeeDto> update(
         @PathVariable Long id,
-        @RequestPart("request") EmployeeUpdateRequest request,
+        @RequestPart("employee") EmployeeUpdateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException;
 
 
