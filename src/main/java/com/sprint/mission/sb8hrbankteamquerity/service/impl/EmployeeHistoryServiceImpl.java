@@ -107,7 +107,7 @@ public class EmployeeHistoryServiceImpl implements EmployeeHistoryService {
     public ChangeLogDetailDto getEmployeeHistoryById(Long employeeHistoryId) {
         EmployeeHistory employeeHistory =
             employeeHistoryRepository.findById(employeeHistoryId).
-                orElseThrow(() -> new BusinessException(EmployeeHistoryErrorCode.EMP_HISTORY_NOT_FOUND));
+                orElseThrow(() -> new BusinessException(EmployeeHistoryErrorCode.EMP_HIST_NOT_FOUND));
 
         return employeeHistoryMapper.toDetailResponse(employeeHistory);
     }

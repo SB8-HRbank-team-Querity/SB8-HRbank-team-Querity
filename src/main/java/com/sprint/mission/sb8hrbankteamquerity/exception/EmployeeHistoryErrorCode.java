@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum EmployeeHistoryErrorCode implements ErrorCode {
 
-    EMP_HISTORY_NOT_FOUND(3001,"NOT_FOUND",HttpStatus.NOT_FOUND,"찾을 수 없는 이력입니다.");
+    EMP_HIST_NOT_FOUND(3001,"NOT_FOUND",HttpStatus.NOT_FOUND,"찾을 수 없는 이력입니다.");
 
     private final int numeric;
     private final String errorKey;
@@ -18,11 +18,16 @@ public enum EmployeeHistoryErrorCode implements ErrorCode {
 
     @Override
     public String getDomain() {
-        return "EMPHISTORY";
+        return "EMP_HIST";
     }
 
     @Override
     public String getCode() {
         return getDomain() + "-" + getErrorKey();
+    }
+
+    @Override
+    public boolean shouldAlert() {
+        return this == EMP_HIST_NOT_FOUND;
     }
 }

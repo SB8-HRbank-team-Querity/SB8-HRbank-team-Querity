@@ -1,49 +1,19 @@
 spring:
-  application:
-    name: hrbank
-  servlet:
-    multipart:
-      enabled: true               # 파일 업로드 활성화 여부 (기본값 true)
-      max-file-size: 10MB         # 업로드 가능한 개별 파일 최대 크기
-      max-request-size: 30MB      # 전체 요청의 최대 크기
-      location: /tmp
-      # DB 접속 정보
-  datasource: # 내용은 셀프로 채우기?
-    url: jdbc:postgresql://localhost:5432/hrbank
-    username: hrbank_user
-    password: hrbank1234
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
-  # JPA 설정
-  jpa:
-    generate-ddl: false
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    # OSIV 비활성화
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
-        highlight_sql: true
-        use_sql_comments: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    application:
+        name: hrbank
+    # 기본 프로필 설정 (로컬 테스트 후 prod로 변경하여 커밋 예정)
+    profiles:
+        active: prod
+    servlet:
+        multipart:
+            enabled: true               # 파일 업로드 활성화 여부 (기본값 true)
+            max-file-size: 10MB         # 업로드 가능한 개별 파일 최대 크기
+            max-request-size: 30MB      # 전체 요청의 최대 크기
+            location: /tmp
 
 # 커스텀 파일 저장 경로 설정
 file:
-  upload-dir: uploads
-
-logging:
-  level:
-    # 실행되는 SQL 출력
-    org.hibernate.SQL: debug
-    # 바인딩되는 파라미터 출력
-    org.hibernate.orm.jdbc.bind: trace
-
- # 3. server config
-server:
-  port: 8080
+    upload-dir: uploads
 
 # 4. backup
 
