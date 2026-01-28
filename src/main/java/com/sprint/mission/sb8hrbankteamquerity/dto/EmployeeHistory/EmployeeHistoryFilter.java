@@ -1,7 +1,7 @@
 package com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory;
 
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
-import com.sprint.mission.sb8hrbankteamquerity.entity.sortType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeHistoryType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.sortType;
 
 import java.time.Instant;
 

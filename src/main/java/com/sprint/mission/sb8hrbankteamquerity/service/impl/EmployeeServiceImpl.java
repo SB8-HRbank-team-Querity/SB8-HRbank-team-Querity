@@ -5,7 +5,7 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHisto
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeHistoryType;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
@@ -16,7 +16,7 @@ import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
-import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeSpecification;
+import com.sprint.mission.sb8hrbankteamquerity.service.Specification.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

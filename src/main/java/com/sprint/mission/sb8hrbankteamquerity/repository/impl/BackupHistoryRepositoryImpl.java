@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.repository;
+package com.sprint.mission.sb8hrbankteamquerity.repository.impl;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -8,7 +8,8 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.mission.sb8hrbankteamquerity.dto.BackupHistory.BackupHistorySearchCondition;
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.repository.BackupHistoryRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

@@ -1,7 +1,7 @@
-package com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI;
+package com.sprint.mission.sb8hrbankteamquerity.service.Specification;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;

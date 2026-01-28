@@ -1,8 +1,8 @@
-package com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI;
+package com.sprint.mission.sb8hrbankteamquerity.service.Specification;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.EmployeeHistory.EmployeeHistoryFilter;
 import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistory;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeHistoryType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 

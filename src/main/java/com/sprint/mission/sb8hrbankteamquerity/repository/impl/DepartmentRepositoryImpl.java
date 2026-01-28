@@ -1,4 +1,4 @@
-package com.sprint.mission.sb8hrbankteamquerity.repository;
+package com.sprint.mission.sb8hrbankteamquerity.repository.impl;
 
 import static com.sprint.mission.sb8hrbankteamquerity.entity.QEmployee.employee;
 
@@ -11,6 +11,8 @@ import com.sprint.mission.sb8hrbankteamquerity.entity.QDepartment;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import com.sprint.mission.sb8hrbankteamquerity.repository.DepartmentRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;

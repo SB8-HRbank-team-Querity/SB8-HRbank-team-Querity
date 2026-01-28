@@ -1,7 +1,7 @@
 package com.sprint.mission.sb8hrbankteamquerity.repository;
 
 import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistory;
-import com.sprint.mission.sb8hrbankteamquerity.entity.BackupHistoryStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.BackupHistoryStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

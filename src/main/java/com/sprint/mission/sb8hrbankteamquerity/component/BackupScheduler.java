@@ -45,8 +45,9 @@ public class BackupScheduler {
         backupHistoryService.create(WORKER);
     }
 
-    //크론 방법
-    @Scheduled(cron = "*/30 * * * * *")
+    // 크론 방법
+    // 30분간격 모니터링
+    @Scheduled(cron = "0 */30 * * * *")
     public void scheduledMonitorInProgress() {
         log.info("[{}] 데이터 모니터링 프로세스 시작 - Time: {}", WORKER, LocalDateTime.now());
 
@@ -58,10 +59,9 @@ public class BackupScheduler {
     }
 
     private void executeMonitorInProgress() {
-        log.info(">> " + WORKER + "권한으로 진행중인 데이터를 실패로 처리..........");
-
         int updateRows = backupHistoryService.updateInProgressToFailed();
         if (updateRows > 0) {
+            log.info(">> " + WORKER + "권한으로 진행중인 데이터를 실패로 처리..........");
             log.warn("총 {}건의 오래된(30분 초과) 백업 작업을 강제 종료처리했습니다.", updateRows);
         } else {
             log.info("정리할 진행중인 데이터가 없습니다.");
