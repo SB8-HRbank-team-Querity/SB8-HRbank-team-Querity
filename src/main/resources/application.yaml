@@ -3,7 +3,7 @@ spring:
         name: hrbank
     # 기본 프로필 설정 (로컬 테스트 후 prod로 변경하여 커밋 예정)
     profiles:
-        active: local
+        active: prod
     servlet:
         multipart:
             enabled: true               # 파일 업로드 활성화 여부 (기본값 true)
