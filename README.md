@@ -26,6 +26,7 @@
 - Discord Webhook
 - H2 Database
 - Apache POI
+- SMTP
 - 공통 Tool: Git & Github, Discord, Notion
 ***
 ## 팀원별 구현 기능 상세
