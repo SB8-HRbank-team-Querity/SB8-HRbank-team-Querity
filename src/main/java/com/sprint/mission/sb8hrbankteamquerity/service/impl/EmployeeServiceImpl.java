@@ -6,8 +6,8 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.*;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Department;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeHistoryType;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeHistoryType;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus;
 import com.sprint.mission.sb8hrbankteamquerity.exception.BusinessException;
 import com.sprint.mission.sb8hrbankteamquerity.exception.DepartmentErrorCode;
 import com.sprint.mission.sb8hrbankteamquerity.exception.EmployeeErrorCode;
@@ -18,7 +18,7 @@ import com.sprint.mission.sb8hrbankteamquerity.repository.EmployeeRepository;
 import com.sprint.mission.sb8hrbankteamquerity.repository.FileRepository;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeHistoryService;
 import com.sprint.mission.sb8hrbankteamquerity.service.EmployeeService;
-import com.sprint.mission.sb8hrbankteamquerity.service.criteriaAPI.EmployeeSpecification;
+import com.sprint.mission.sb8hrbankteamquerity.service.Specification.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +34,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus.ACTIVE;
+import static com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus.ACTIVE;
 
 @Service
 @RequiredArgsConstructor

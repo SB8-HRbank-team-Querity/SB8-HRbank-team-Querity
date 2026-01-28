@@ -5,7 +5,7 @@ import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.EmployeeDistributio
 import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.EmployeeTrendDto;
 import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.EmployeeTrendRequest;
 import com.sprint.mission.sb8hrbankteamquerity.dto.employee.*;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus;
 
 import java.util.List;
 

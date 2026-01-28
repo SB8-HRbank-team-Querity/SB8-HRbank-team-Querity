@@ -2,7 +2,7 @@ package com.sprint.mission.sb8hrbankteamquerity.repository;
 
 import com.sprint.mission.sb8hrbankteamquerity.dto.dashBoard.EmployeeDistributionRequest;
 import com.sprint.mission.sb8hrbankteamquerity.entity.Employee;
-import com.sprint.mission.sb8hrbankteamquerity.entity.EmployeeStatus;
+import com.sprint.mission.sb8hrbankteamquerity.entity.enums.EmployeeStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
