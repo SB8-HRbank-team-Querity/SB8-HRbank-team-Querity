@@ -11,8 +11,8 @@ CREATE TABLE department
     name             varchar(100) NOT NULL UNIQUE,
     description      text         NOT NULL,
     established_date date         NOT NULL,
-    created_at       timestamptz  NOT NULL,
-    updated_at       timestamptz  NOT NULL
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP  NOT NULL,
+    updated_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP  NOT NULL
 );
 
 -- 2. 파일 메타 데이터 테이블
@@ -57,7 +57,7 @@ CREATE TABLE employee_history
     type             varchar(50)  NOT NULL,
     memo             text,
     ip_address       varchar(200) NOT NULL,
-    created_at       timestamptz  NOT NULL,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP  NOT NULL,
     changed_detail   jsonb        NOT NULL,
     employee_name    varchar(50)  NOT NULL,
     employee_number  varchar(50)  NOT NULL,
@@ -71,10 +71,10 @@ CREATE TABLE backup_history
 (
     id         serial PRIMARY KEY,
     worker     varchar(50)                   NOT NULL,
-    started_at timestamptz                   NOT NULL,
-    ended_at   timestamptz,
+    started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP                   NOT NULL,
+    ended_at   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     status     varchar(50) DEFAULT 'SKIPPED' NOT NULL,
-    created_at timestamptz                   NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP                   NOT NULL,
     file_id    int REFERENCES file_meta (id),
 
     CHECK (status IN ('SKIPPED', 'COMPLETED', 'FAILED', 'IN_PROGRESS'))
