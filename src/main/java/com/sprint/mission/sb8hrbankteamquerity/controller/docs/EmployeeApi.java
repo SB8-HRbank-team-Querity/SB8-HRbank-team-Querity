@@ -81,7 +81,7 @@ public interface EmployeeApi {
         ),
     })
     ResponseEntity<EmployeeDto> create(
-        @RequestPart("request") EmployeeCreateRequest request,
+        @RequestPart("employee") EmployeeCreateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException;
 
 
@@ -102,7 +102,7 @@ public interface EmployeeApi {
     })
     ResponseEntity<EmployeeDto> update(
         @PathVariable Long id,
-        @RequestPart("request") EmployeeUpdateRequest request,
+        @RequestPart("employee") EmployeeUpdateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException;
 
 
