@@ -13,8 +13,8 @@ spring:
   mail:
     host: smtp.gmail.com # 또는 localhost
     port: 587
-    username: user
-    password: password
+    username: "ljjn0520@gmail.com"
+    password: "hapl igvz xwwd ghde"
     properties:
       mail:
         smtp:

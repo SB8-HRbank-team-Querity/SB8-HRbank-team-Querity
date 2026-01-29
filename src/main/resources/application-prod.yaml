@@ -20,8 +20,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${GUSER}  # 발신자 Gmail 주소
-    password: ${GPASSWORD}  # 생성한 16자리 앱 비밀번호
+    username: "ljjn0520@gmail.com"  # 발신자 Gmail 주소
+    password: "hapl igvz xwwd ghde"  # 생성한 16자리 앱 비밀번호
     properties:
       mail:
         smtp:
