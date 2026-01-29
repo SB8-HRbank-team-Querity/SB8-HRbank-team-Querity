@@ -362,5 +362,4 @@ src
 http://sb8-hrbank-team-querity-production.up.railway.app
 
 ## 프로젝트 회고록
-[HR BANK 1.pdf](https://github.com/user-attachments/files/24914754/HR.BANK.1.pdf)
-
+[SB8기_초급_2팀_쿼리티있조.pdf](https://github.com/user-attachments/files/24925480/SB8._._2._.pdf)
