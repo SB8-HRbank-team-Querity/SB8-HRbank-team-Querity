@@ -1,4 +1,4 @@
-[HR BANK 1.pdf](https://github.com/user-attachments/files/24914749/HR.BANK.1.pdf)## 쿼리티있조
+## 쿼리티있조
 [쿼리티있조 노션 링크](https://www.notion.so/ohgiraffers/2-Query-2ee649136c118044b776e0173c23f1f9?source=copy_link)
 ***
 ## 팀원 구성
